@@ -72,7 +72,6 @@
         </div>
         <div class="workload-chart-wrap">
           <svg id="workload-chart" viewBox="0 0 920 280" role="img" aria-label="Weekly workload chart"></svg>
-          <div class="chart-balloon" id="chart-balloon" hidden></div>
         </div>
         <div class="workload-legend" id="workload-legend"></div>
         <div class="workload-formula-wrap">
@@ -152,14 +151,14 @@
 
         <section class="panel-block detail-panel" id="detail-panel" data-panel="detail" aria-live="polite" aria-expanded="false" hidden>
           <div class="panel-collapse-wrap">
-            <button type="button" class="panel-collapse-bar" data-panel-toggle="detail" aria-expanded="true">
+            <button type="button" class="panel-collapse-bar" data-panel-toggle="detail" aria-expanded="false">
               <span class="panel-collapse-title" id="detail-panel-title">Session details</span>
               <span class="panel-collapse-meta" id="detail-panel-meta"></span>
-              <span class="panel-collapse-hint" id="detail-collapse-hint">Click to collapse</span>
+              <span class="panel-collapse-hint" id="detail-collapse-hint">Click to expand</span>
             </button>
             <button type="button" class="panel-close-btn" id="detail-panel-close" aria-label="Close session details">×</button>
           </div>
-          <div class="panel-body" id="detail-panel-body">
+          <div class="panel-body" id="detail-panel-body" hidden>
           <div class="detail-body" id="detail">
             <div class="empty-detail">
               <p class="empty-kicker">Session details</p>
@@ -186,6 +185,7 @@
         </div>
       </section>
     </div>
+    <div class="chart-balloon" id="chart-balloon" hidden></div>
     <div class="open-balloon" id="open-balloon" hidden></div>
 
     <script src="data/workouts.js"></script>

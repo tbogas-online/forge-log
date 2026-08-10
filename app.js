@@ -14,7 +14,7 @@
     calendar: false,
     sessions: false,
     prs: false,
-    detail: true,
+    detail: false,
   };
 
   const SECTION_HEADERS = [
@@ -157,13 +157,11 @@
 
   function loadPanelsUi(custom) {
     let calendarMonth = getDefaultCalendarMonth(custom);
-    const panelsOpen = { ...DEFAULT_PANELS_OPEN };
 
     try {
       const legacy = JSON.parse(localStorage.getItem(LEGACY_CALENDAR_UI_KEY) || "null");
-      if (legacy && typeof legacy === "object") {
-        panelsOpen.calendar = Boolean(legacy.open);
-        if (typeof legacy.month === "string") calendarMonth = legacy.month;
+      if (legacy && typeof legacy === "object" && typeof legacy.month === "string") {
+        calendarMonth = legacy.month;
       }
     } catch {
       /* ignore */
@@ -171,24 +169,18 @@
 
     try {
       const data = JSON.parse(localStorage.getItem(PANELS_UI_KEY) || "{}");
-      if (data.panels && typeof data.panels === "object") {
-        for (const id of PANEL_IDS) {
-          if (typeof data.panels[id] === "boolean") panelsOpen[id] = data.panels[id];
-        }
-      }
       if (typeof data.calendarMonth === "string") calendarMonth = data.calendarMonth;
     } catch {
       /* ignore */
     }
 
-    return { panelsOpen, calendarMonth };
+    return { panelsOpen: { ...DEFAULT_PANELS_OPEN }, calendarMonth };
   }
 
-  function savePanelsUi() {
+  function saveCalendarMonth() {
     localStorage.setItem(
       PANELS_UI_KEY,
       JSON.stringify({
-        panels: state.panelsOpen,
         calendarMonth: state.calendarMonth,
       })
     );
@@ -209,10 +201,16 @@
       panel.classList.add("is-collapsed");
       body.hidden = true;
       toggle.setAttribute("aria-expanded", "false");
+      const closeBtn = document.getElementById("detail-panel-close");
+      if (closeBtn) closeBtn.hidden = true;
       return;
     }
 
-    if (id === "detail") panel.hidden = false;
+    if (id === "detail") {
+      panel.hidden = false;
+      const closeBtn = document.getElementById("detail-panel-close");
+      if (closeBtn) closeBtn.hidden = false;
+    }
 
     const open = isPanelOpen(id);
     panel.classList.toggle("is-collapsed", !open);
@@ -229,7 +227,6 @@
   function setPanelOpen(id, open) {
     if (!PANEL_IDS.includes(id)) return;
     state.panelsOpen[id] = Boolean(open);
-    savePanelsUi();
     syncPanel(id);
     if (id === "calendar" && state.panelsOpen.calendar) renderCalendar();
   }
@@ -867,15 +864,16 @@
   }
 
   function positionBalloon(hitEl) {
-    const wrap = els.chart.closest(".workload-chart-wrap");
-    if (!wrap || !els.balloon || !hitEl) return;
-    const wrapRect = wrap.getBoundingClientRect();
+    if (!els.balloon || !hitEl) return;
     const hitRect = hitEl.getBoundingClientRect();
     const balloonRect = els.balloon.getBoundingClientRect();
-    let left = hitRect.left - wrapRect.left + hitRect.width / 2 - balloonRect.width / 2;
-    let top = hitRect.top - wrapRect.top - balloonRect.height - 10;
-    left = Math.max(8, Math.min(left, wrapRect.width - balloonRect.width - 8));
-    if (top < 8) top = hitRect.bottom - wrapRect.top + 10;
+    let left = hitRect.left + hitRect.width / 2 - balloonRect.width / 2;
+    let top = hitRect.top - balloonRect.height - 10;
+    left = Math.max(8, Math.min(left, window.innerWidth - balloonRect.width - 8));
+    if (top < 8) top = hitRect.bottom + 10;
+    if (top + balloonRect.height > window.innerHeight - 8) {
+      top = Math.max(8, hitRect.top - balloonRect.height - 10);
+    }
     els.balloon.style.left = `${left}px`;
     els.balloon.style.top = `${top}px`;
   }
@@ -2795,6 +2793,7 @@
 
     if (els.detailPanelTitle) els.detailPanelTitle.textContent = title;
     if (els.detailPanelMeta) els.detailPanelMeta.textContent = meta;
+    if (els.detailPanelClose) els.detailPanelClose.hidden = !state.detailExpanded;
     els.detailPanel.setAttribute("aria-expanded", state.detailExpanded ? "true" : "false");
     syncPanel("detail");
   }
@@ -2802,7 +2801,6 @@
   function expandDetail() {
     state.detailExpanded = true;
     state.panelsOpen.detail = true;
-    savePanelsUi();
     syncDetailPanel();
   }
 
@@ -2868,7 +2866,7 @@
     els.calendarPrev.addEventListener("click", () => {
       if (!window.ForgeCalendar) return;
       state.calendarMonth = window.ForgeCalendar.shiftMonth(state.calendarMonth, -1);
-      savePanelsUi();
+      saveCalendarMonth();
       renderCalendar();
     });
   }
@@ -2877,7 +2875,7 @@
     els.calendarNext.addEventListener("click", () => {
       if (!window.ForgeCalendar) return;
       state.calendarMonth = window.ForgeCalendar.shiftMonth(state.calendarMonth, 1);
-      savePanelsUi();
+      saveCalendarMonth();
       renderCalendar();
     });
   }
@@ -2938,6 +2936,7 @@
 
   ensurePastDueComplete();
   ensureSeedPrs();
+  state.panelsOpen = { ...DEFAULT_PANELS_OPEN };
   syncFormulaVisibility();
   syncAllPanels();
   syncDetailPanel();

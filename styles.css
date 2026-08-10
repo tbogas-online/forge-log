@@ -354,6 +354,10 @@ body {
   overflow: visible;
 }
 
+.workload-panel .panel-body {
+  overflow: visible;
+}
+
 .workload-head {
   display: flex;
   justify-content: space-between;
@@ -508,6 +512,11 @@ body {
   overflow: hidden;
 }
 
+.panel-block.workload-panel {
+  overflow: visible;
+  z-index: 6;
+}
+
 .panel-block.is-collapsed {
   margin-bottom: 0.65rem;
 }
@@ -528,7 +537,7 @@ body {
   justify-content: space-between;
   gap: 0.75rem;
   flex: 1;
-  width: 100%;
+  min-width: 0;
   padding: 0.85rem 1.1rem;
   border: 0;
   background: transparent;
@@ -536,6 +545,10 @@ body {
   cursor: pointer;
   user-select: none;
   text-align: left;
+}
+
+.panel-collapse-wrap .panel-collapse-bar {
+  width: auto;
 }
 
 .panel-collapse-bar:hover {
@@ -559,6 +572,10 @@ body {
   color: var(--accent);
   letter-spacing: 0.04em;
   white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .panel-collapse-hint {
@@ -574,11 +591,24 @@ body {
   border-left: 1px solid var(--line);
   background: transparent;
   color: var(--muted);
-  width: 2.6rem;
+  width: 2.75rem;
+  min-width: 2.75rem;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
   font-size: 1.35rem;
   line-height: 1;
   cursor: pointer;
   flex-shrink: 0;
+  z-index: 1;
+}
+
+.detail-panel .panel-collapse-hint {
+  display: none;
+}
+
+.detail-panel .panel-close-btn {
+  color: var(--text);
 }
 
 .panel-close-btn:hover {
@@ -1018,8 +1048,8 @@ body {
 }
 
 .chart-balloon {
-  position: absolute;
-  z-index: 50;
+  position: fixed;
+  z-index: 90;
   min-width: 220px;
   max-width: min(340px, 86vw);
   padding: 0.75rem 0.85rem;
@@ -1264,19 +1294,32 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  align-self: start;
+  width: 100%;
 }
 
 .list-panel .panel-body,
 .detail-panel .panel-body {
   display: flex;
   flex-direction: column;
-  flex: 1;
   min-height: 0;
   padding: 0;
 }
 
+.list-panel .panel-body {
+  flex: none;
+}
+
+.list-panel .panel-collapse-bar {
+  border-bottom: 1px solid var(--line);
+}
+
 .list-panel {
   animation: rise 0.55s ease 0.14s both;
+}
+
+.detail-panel .panel-body {
+  flex: 1;
 }
 
 .list-head-row {
@@ -1290,7 +1333,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 1rem 1rem 0.85rem;
+  padding: 0.65rem 1rem 0.75rem;
   border-bottom: 1px solid var(--line);
 }
 
@@ -1301,7 +1344,6 @@ body {
   align-items: center;
   padding: 0.75rem 1rem 1rem;
   border-top: 1px solid var(--line);
-  margin-top: auto;
 }
 
 .list-head h2 {
