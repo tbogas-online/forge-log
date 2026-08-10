@@ -2,6 +2,20 @@
   const STORAGE_KEY = "forge-log-entries-v1";
   const CUSTOM_KEY = "forge-log-custom-workouts-v1";
   const MANUAL_PR_KEY = "forge-log-manual-prs-v1";
+  const COACH_FEEDBACK_KEY = "forge-log-coach-feedback-v1";
+  const PANELS_UI_KEY = "forge-log-panels-ui-v2";
+  const LEGACY_CALENDAR_UI_KEY = "forge-log-calendar-ui-v1";
+
+  const PANEL_IDS = ["workload", "coach", "calendar", "sessions", "prs", "detail"];
+
+  const DEFAULT_PANELS_OPEN = {
+    workload: true,
+    coach: false,
+    calendar: false,
+    sessions: false,
+    prs: false,
+    detail: true,
+  };
 
   const SECTION_HEADERS = [
     "STRENGTH ENDURANCE",
@@ -30,14 +44,20 @@
     logs: loadLogs(),
     custom: loadCustom(),
     manualPrs: loadManualPrs(),
+    coachFeedback: loadCoachFeedback(),
     detailExpanded: false,
+    formulaVisible: false,
   };
+
+  Object.assign(state, loadPanelsUi(state.custom));
 
   const els = {
     list: document.getElementById("workout-list"),
     detail: document.getElementById("detail"),
     detailPanel: document.getElementById("detail-panel"),
-    detailCollapseBar: document.getElementById("detail-collapse-bar"),
+    detailPanelTitle: document.getElementById("detail-panel-title"),
+    detailPanelMeta: document.getElementById("detail-panel-meta"),
+    detailPanelClose: document.getElementById("detail-panel-close"),
     detailCollapseHint: document.getElementById("detail-collapse-hint"),
     stats: document.getElementById("stats"),
     search: document.getElementById("search"),
@@ -47,12 +67,25 @@
     prsGrid: document.getElementById("prs-grid"),
     prsRefresh: document.getElementById("prs-refresh"),
     prsAdd: document.getElementById("prs-add"),
+    coachInsights: document.getElementById("coach-insights"),
+    calendarGrid: document.getElementById("calendar-grid"),
+    calendarTitle: document.getElementById("calendar-title"),
+    calendarLegend: document.getElementById("calendar-legend"),
+    calendarPanel: document.getElementById("calendar-panel"),
+    calendarPanelMeta: document.getElementById("calendar-panel-meta"),
+    calendarPrev: document.getElementById("calendar-prev"),
+    calendarNext: document.getElementById("calendar-next"),
+    workloadPanelMeta: document.getElementById("workload-panel-meta"),
+    coachPanelMeta: document.getElementById("coach-panel-meta"),
+    sessionsPanelMeta: document.getElementById("sessions-panel-meta"),
+    prsPanelMeta: document.getElementById("prs-panel-meta"),
     chart: document.getElementById("workload-chart"),
     chartSummary: document.getElementById("workload-summary"),
     chartLegend: document.getElementById("workload-legend"),
+    chartFormula: document.getElementById("workload-formula"),
+    chartFormulaToggle: document.getElementById("workload-formula-toggle"),
     chartCaption: document.getElementById("workload-caption"),
     chartPeriod: document.getElementById("workload-period"),
-    chartFormula: document.getElementById("workload-formula"),
     intervalPresets: document.getElementById("interval-presets"),
     intervalCustom: document.getElementById("interval-custom"),
     intervalFrom: document.getElementById("interval-from"),
@@ -63,12 +96,16 @@
     banner: document.getElementById("app-banner"),
   };
 
+  const WORKOUT_TYPES = ["WOD", "HYBRID", "FBB", "RUN", "WALK", "HIT", "OTHER"];
+
   const LOAD_WEIGHTS = {
     WOD: 1.0,
     HYBRID: 1.25,
     FBB: 0.9,
     RUN: 0.35,
     WALK: 0.2,
+    HIT: 1.2,
+    OTHER: 0.8,
   };
 
   const SERIES = [
@@ -77,6 +114,8 @@
     { key: "FBB", color: "#ff7a9a", label: "FBB" },
     { key: "RUN", color: "#7ddea0", label: "Run" },
     { key: "WALK", color: "#b8a4ff", label: "Walk" },
+    { key: "HIT", color: "#ff6b4a", label: "HIT" },
+    { key: "OTHER", color: "#b0a89a", label: "Other" },
   ];
 
   function loadManualPrs() {
@@ -90,6 +129,141 @@
 
   function saveManualPrs() {
     localStorage.setItem(MANUAL_PR_KEY, JSON.stringify(state.manualPrs));
+  }
+
+  function loadCoachFeedback() {
+    try {
+      const data = JSON.parse(localStorage.getItem(COACH_FEEDBACK_KEY) || "{}");
+      return {
+        kinds: data.kinds || {},
+        suggestionTypes: data.suggestionTypes || {},
+        dismissedIds: Array.isArray(data.dismissedIds) ? data.dismissedIds : [],
+      };
+    } catch {
+      return { kinds: {}, suggestionTypes: {}, dismissedIds: [] };
+    }
+  }
+
+  function saveCoachFeedback() {
+    localStorage.setItem(COACH_FEEDBACK_KEY, JSON.stringify(state.coachFeedback));
+  }
+
+  function getDefaultCalendarMonth(custom = []) {
+    const workouts = [...(window.WORKOUTS || []), ...custom].sort((a, b) =>
+      b.date.localeCompare(a.date)
+    );
+    return (workouts[0]?.date || todayIso()).slice(0, 7);
+  }
+
+  function loadPanelsUi(custom) {
+    let calendarMonth = getDefaultCalendarMonth(custom);
+    const panelsOpen = { ...DEFAULT_PANELS_OPEN };
+
+    try {
+      const legacy = JSON.parse(localStorage.getItem(LEGACY_CALENDAR_UI_KEY) || "null");
+      if (legacy && typeof legacy === "object") {
+        panelsOpen.calendar = Boolean(legacy.open);
+        if (typeof legacy.month === "string") calendarMonth = legacy.month;
+      }
+    } catch {
+      /* ignore */
+    }
+
+    try {
+      const data = JSON.parse(localStorage.getItem(PANELS_UI_KEY) || "{}");
+      if (data.panels && typeof data.panels === "object") {
+        for (const id of PANEL_IDS) {
+          if (typeof data.panels[id] === "boolean") panelsOpen[id] = data.panels[id];
+        }
+      }
+      if (typeof data.calendarMonth === "string") calendarMonth = data.calendarMonth;
+    } catch {
+      /* ignore */
+    }
+
+    return { panelsOpen, calendarMonth };
+  }
+
+  function savePanelsUi() {
+    localStorage.setItem(
+      PANELS_UI_KEY,
+      JSON.stringify({
+        panels: state.panelsOpen,
+        calendarMonth: state.calendarMonth,
+      })
+    );
+  }
+
+  function isPanelOpen(id) {
+    return Boolean(state.panelsOpen[id]);
+  }
+
+  function syncPanel(id) {
+    const panel = document.querySelector(`[data-panel="${id}"]`);
+    const body = document.getElementById(`${id}-panel-body`);
+    const toggle = document.querySelector(`[data-panel-toggle="${id}"]`);
+    if (!panel || !body || !toggle) return;
+
+    if (id === "detail" && !state.detailExpanded) {
+      panel.hidden = true;
+      panel.classList.add("is-collapsed");
+      body.hidden = true;
+      toggle.setAttribute("aria-expanded", "false");
+      return;
+    }
+
+    if (id === "detail") panel.hidden = false;
+
+    const open = isPanelOpen(id);
+    panel.classList.toggle("is-collapsed", !open);
+    body.hidden = !open;
+    toggle.setAttribute("aria-expanded", String(open));
+    const hint = toggle.querySelector(".panel-collapse-hint");
+    if (hint) hint.textContent = open ? "Click to collapse" : "Click to expand";
+  }
+
+  function syncAllPanels() {
+    for (const id of PANEL_IDS) syncPanel(id);
+  }
+
+  function setPanelOpen(id, open) {
+    if (!PANEL_IDS.includes(id)) return;
+    state.panelsOpen[id] = Boolean(open);
+    savePanelsUi();
+    syncPanel(id);
+    if (id === "calendar" && state.panelsOpen.calendar) renderCalendar();
+  }
+
+  function togglePanel(id) {
+    setPanelOpen(id, !isPanelOpen(id));
+  }
+
+  function recordCoachVote(insight, direction) {
+    if (!insight?.kind || !["up", "down"].includes(direction)) return;
+    const key = insight.kind;
+    if (!state.coachFeedback.kinds[key]) {
+      state.coachFeedback.kinds[key] = { up: 0, down: 0 };
+    }
+    state.coachFeedback.kinds[key][direction] += 1;
+
+    if (insight.kind === "suggestion" && insight.type) {
+      if (!state.coachFeedback.suggestionTypes[insight.type]) {
+        state.coachFeedback.suggestionTypes[insight.type] = { up: 0, down: 0 };
+      }
+      state.coachFeedback.suggestionTypes[insight.type][direction] += 1;
+    }
+
+    if (insight.id && !state.coachFeedback.dismissedIds.includes(insight.id)) {
+      state.coachFeedback.dismissedIds.push(insight.id);
+    }
+
+    saveCoachFeedback();
+    renderCoach();
+    showBanner(
+      direction === "up"
+        ? "Thanks — tip hidden. Coach will show more like this later."
+        : "Got it — tip hidden. Coach will adjust future tips."
+    );
   }
 
   function ensureSeedPrs() {
@@ -256,7 +430,7 @@
       total: 0,
       sessions: 0,
       runKm: 0,
-      byType: { WOD: 0, HYBRID: 0, FBB: 0, RUN: 0, WALK: 0 },
+      byType: Object.fromEntries(WORKOUT_TYPES.map((t) => [t, 0])),
       items: [],
     };
   }
@@ -337,6 +511,12 @@
     });
   }
 
+  function syncFormulaVisibility() {
+    if (!els.chartFormula || !els.chartFormulaToggle) return;
+    els.chartFormula.hidden = !state.formulaVisible;
+    els.chartFormulaToggle.hidden = state.formulaVisible;
+  }
+
   function syncIntervalControls() {
     if (!els.intervalPresets) return;
     els.intervalPresets.querySelectorAll("[data-interval]").forEach((btn) => {
@@ -378,7 +558,7 @@
     return weeks.map((w) => {
       const value = Math.round((w.byType[typeFilter] || 0) * 100) / 100;
       const items = (w.items || []).filter((i) => i.type === typeFilter);
-      const byType = { WOD: 0, HYBRID: 0, FBB: 0, RUN: 0, WALK: 0 };
+      const byType = Object.fromEntries(WORKOUT_TYPES.map((t) => [t, 0]));
       byType[typeFilter] = value;
       return {
         ...w,
@@ -445,9 +625,13 @@
       }`;
     }
 
+    if (els.workloadPanelMeta) {
+      els.workloadPanelMeta.textContent = `${formatPeriodDate(range.from)} → ${formatPeriodDate(range.to)}`;
+    }
+
     if (els.chartFormula) {
       els.chartFormula.textContent =
-        "Load formula (completed sessions only): WOD 1.0 · Hybrid 1.25 · FBB 0.9 · Run 0.35+0.28/km · Walk 0.2+0.12/km · +0.25 strength · +0.35 conditioning/team · +0.15 hard effort (1RM/AMRAP/For Time). Weekly total = sum of session loads. Click a legend item to filter.";
+        "Load formula (completed sessions only): WOD 1.0 · Hybrid 1.25 · FBB 0.9 · HIT 1.2 · Other 0.8 · Run 0.35+0.28/km · Walk 0.2+0.12/km · +0.25 strength · +0.35 conditioning/team · +0.15 hard effort (1RM/AMRAP/For Time). Weekly total = sum of session loads. Click a legend item to filter.";
     }
 
     els.chartSummary.innerHTML = `
@@ -820,6 +1004,30 @@
     return true;
   }
 
+  function afterWorkoutDeleted(deletedId) {
+    if (state.selectedId === deletedId) {
+      state.selectedId =
+        allWorkouts().sort((a, b) => b.date.localeCompare(a.date))[0]?.id || null;
+      state.detailExpanded = false;
+    }
+    hideOpenBalloon();
+    renderPrs();
+    renderStats();
+    renderWorkload();
+    renderList();
+    renderDetail();
+    syncDetailPanel();
+    showBanner("Session deleted.");
+  }
+
+  function confirmDeleteWorkout(id) {
+    const workout = allWorkouts().find((w) => w.id === id);
+    if (!workout) return;
+    const label = `${formatDate(workout.date)} · ${workout.title}`;
+    if (!window.confirm(`Delete this session?\n\n${label}`)) return;
+    if (deleteWorkoutById(id)) afterWorkoutDeleted(id);
+  }
+
   function hideOpenBalloon() {
     if (!els.openBalloon) return;
     els.openBalloon.hidden = true;
@@ -863,18 +1071,7 @@
         return;
       }
       if (action === "delete") {
-        deleteWorkoutById(workout.id);
-        hideOpenBalloon();
-        showBanner("Session deleted.");
-        if (state.selectedId === workout.id) {
-          state.selectedId =
-            allWorkouts()
-              .filter((w) => !getLog(w.id)?.deleted)
-              .sort((a, b) => b.date.localeCompare(a.date))[0]?.id || null;
-        }
-        renderStats();
-        renderList();
-        renderDetail();
+        if (deleteWorkoutById(workout.id)) afterWorkoutDeleted(workout.id);
       }
     };
   }
@@ -954,6 +1151,8 @@
     if (/\bRUN\b/.test(upper)) return "RUN";
     if (/\bFBB\b/.test(upper)) return "FBB";
     if (/\bHYBRID\b/.test(upper)) return "HYBRID";
+    if (/\bHIT\b/.test(upper)) return "HIT";
+    if (/\bOTHER\b/.test(upper)) return "OTHER";
     if (/\bWOD\b/.test(upper)) return "WOD";
     return "WOD";
   }
@@ -1198,7 +1397,7 @@
     if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/.test(t)) return true;
     // Portuguese long dates only start a session after a blank/separator line
     if (/^\d{1,2}\s+de\s+[a-zçãáéíóú]+\s+de\s+\d{4}/i.test(t)) return prevBlank;
-    if (/^(WOD|HYBRID(?:\s+DOUBLES)?|FBB)\b/i.test(t) && t.length < 40) return prevBlank;
+    if (/^(WOD|HYBRID(?:\s+DOUBLES)?|FBB|HIT|OTHER)\b/i.test(t) && t.length < 40) return prevBlank;
     return false;
   }
 
@@ -1341,11 +1540,7 @@
     return allWorkouts()
       .filter((w) => {
         const completed = isCompleted(w);
-        if (state.filter === "WOD" && w.type !== "WOD") return false;
-        if (state.filter === "HYBRID" && w.type !== "HYBRID") return false;
-        if (state.filter === "FBB" && w.type !== "FBB") return false;
-        if (state.filter === "RUN" && w.type !== "RUN") return false;
-        if (state.filter === "WALK" && w.type !== "WALK") return false;
+        if (WORKOUT_TYPES.includes(state.filter) && w.type !== state.filter) return false;
         if (state.filter === "LOGGED" && !completed) return false;
         if (!q) return true;
         const hay = [
@@ -1365,6 +1560,131 @@
       .sort((a, b) => b.date.localeCompare(a.date));
   }
 
+  function initCalendarMonth() {
+    return getDefaultCalendarMonth(state.custom);
+  }
+
+  function renderCalendar() {
+    if (!els.calendarGrid || !window.ForgeCalendar) return;
+    const cal = window.ForgeCalendar;
+    const byDate = cal.groupByDate(allWorkouts());
+    const cells = cal.getMonthCells(state.calendarMonth);
+    const today = todayIso();
+    const monthLabel = cal.monthLabel(state.calendarMonth);
+
+    if (els.calendarTitle) {
+      els.calendarTitle.textContent = monthLabel;
+    }
+    if (els.calendarPanelMeta) {
+      els.calendarPanelMeta.textContent = monthLabel;
+    }
+
+    if (!isPanelOpen("calendar")) return;
+
+    els.calendarGrid.innerHTML = cells
+      .map((iso) => {
+        if (!iso) return `<div class="calendar-cell is-empty"></div>`;
+        const sessions = byDate.get(iso) || [];
+        const counts = cal.countsByType(sessions);
+        const gradient = cal.donutGradient(counts);
+        const dayNum = Number(iso.slice(-2));
+        const letters = cal.dayLetters(sessions);
+        const isToday = iso === today;
+        const hasSessions = sessions.length > 0;
+        const donutStyle = gradient
+          ? `style="background:${gradient}"`
+          : `style="background:color-mix(in srgb, var(--line) 55%, transparent)"`;
+
+        return `
+          <button type="button" class="calendar-cell${isToday ? " is-today" : ""}${hasSessions ? " has-sessions" : ""}" data-date="${escapeAttr(iso)}" title="${hasSessions ? escapeAttr(sessions.map((w) => w.title).join(" · ")) : "Rest day"}">
+            <div class="calendar-donut" ${donutStyle}>
+              <span class="calendar-donut-hole">${dayNum}</span>
+            </div>
+            <span class="calendar-letters">${escapeHtml(letters)}</span>
+          </button>`;
+      })
+      .join("");
+
+    if (els.calendarLegend) {
+      els.calendarLegend.innerHTML = cal.TYPE_ORDER.map(
+        (type) =>
+          `<span class="calendar-key"><span class="calendar-key-swatch" style="background:${cal.TYPE_COLORS[type]}"></span>${cal.TYPE_LETTERS[type]} ${type}</span>`
+      ).join("");
+    }
+
+    els.calendarGrid.querySelectorAll("[data-date]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const iso = btn.dataset.date;
+        const sessions = (byDate.get(iso) || []).slice().sort((a, b) => a.title.localeCompare(b.title));
+        if (!sessions.length) return;
+        highlightSession(sessions[0].id);
+      });
+    });
+  }
+
+  function renderCoach() {
+    if (!els.coachInsights || !window.ForgeCoach) return;
+    const insights = window.ForgeCoach.buildInsights({
+      workouts: allWorkouts(),
+      isCompleted,
+      prBoard: getPrBoard(),
+      today: todayIso(),
+      feedback: state.coachFeedback,
+    });
+
+    if (!insights.length) {
+      els.coachInsights.innerHTML =
+        `<p class="coach-empty">No recommendations right now. Complete sessions to unlock new tips.</p>`;
+      if (els.coachPanelMeta) els.coachPanelMeta.textContent = "No tips";
+      return;
+    }
+
+    if (els.coachPanelMeta) {
+      els.coachPanelMeta.textContent = `${insights.length} tip${insights.length === 1 ? "" : "s"}`;
+    }
+
+    els.coachInsights.innerHTML = insights
+      .map((item) => {
+        const warn = item.severity === "warn" ? " is-warn" : "";
+        const action =
+          item.kind === "suggestion" && item.workoutId
+            ? `<button type="button" class="coach-action" data-coach-workout="${escapeAttr(item.workoutId)}">Open suggested session</button>`
+            : "";
+        const sub =
+          item.kind === "suggestion" && item.reason
+            ? `<p class="coach-reason">${escapeHtml(item.reason)}</p>`
+            : "";
+        return `
+          <article class="coach-card${warn}" data-kind="${escapeAttr(item.kind)}" data-insight-id="${escapeAttr(item.id)}">
+            <span class="coach-icon" aria-hidden="true">${item.icon}</span>
+            <div class="coach-body">
+              <p class="coach-text">${escapeHtml(item.text).replace(/\n/g, "<br>")}</p>
+              ${sub}
+              ${action}
+            </div>
+            <div class="coach-feedback" aria-label="Rate this tip">
+              <button type="button" class="coach-vote" data-vote="up" data-insight-id="${escapeAttr(item.id)}" title="Helpful" aria-label="Helpful">↑</button>
+              <button type="button" class="coach-vote" data-vote="down" data-insight-id="${escapeAttr(item.id)}" title="Not helpful" aria-label="Not helpful">↓</button>
+            </div>
+          </article>`;
+      })
+      .join("");
+
+    els.coachInsights.querySelectorAll("[data-coach-workout]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        selectWorkout(btn.dataset.coachWorkout, { open: true });
+      });
+    });
+
+    els.coachInsights.querySelectorAll("[data-vote]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const insight = insights.find((item) => item.id === btn.dataset.insightId);
+        if (!insight) return;
+        recordCoachVote(insight, btn.dataset.vote);
+      });
+    });
+  }
+
   function renderStats() {
     const workouts = allWorkouts();
     const total = workouts.length;
@@ -1375,7 +1695,7 @@
       .reduce((sum, w) => sum + Number(w.activity.distanceKm), 0);
     const avgRunPace = averagePaceForType("RUN");
     const avgWalkPace = averagePaceForType("WALK");
-    const byType = ["WOD", "HYBRID", "FBB", "RUN", "WALK"].map((t) => ({
+    const byType = WORKOUT_TYPES.map((t) => ({
       t,
       n: workouts.filter((w) => w.type === t).length,
     }));
@@ -1417,10 +1737,16 @@
       )}
     `;
     renderWorkload();
+    renderCoach();
+    renderCalendar();
   }
 
   function renderList() {
     const items = filteredWorkouts();
+    if (els.sessionsPanelMeta) {
+      const n = items.length;
+      els.sessionsPanelMeta.textContent = `${n} session${n === 1 ? "" : "s"}`;
+    }
     if (!items.length) {
       els.list.innerHTML = `<li style="padding:1rem;color:var(--muted)">No sessions match.</li>`;
       return;
@@ -1750,6 +2076,10 @@
     const board = getPrBoard();
     state.lastPrBoard = board;
 
+    if (els.prsPanelMeta) {
+      els.prsPanelMeta.textContent = `${board.length} PR${board.length === 1 ? "" : "s"}`;
+    }
+
     const cards = board
       .map((item) => {
         const selected =
@@ -1789,7 +2119,7 @@
         expandDetail();
         renderPrs();
         renderProgression(btn.dataset.exercise);
-        syncDetailCollapsed();
+        syncDetailPanel();
       });
     });
 
@@ -2066,6 +2396,8 @@
   }
 
   function renderDetail() {
+    syncDetailPanel();
+
     if (state.mode === "add") {
       renderAddForm();
       return;
@@ -2186,7 +2518,8 @@
         </div>
         <div class="actions">
           <button class="btn btn-primary" type="submit">Save log</button>
-          <button class="btn btn-danger" type="button" id="clear-log">Clear</button>
+          <button class="btn btn-ghost" type="button" id="clear-log">Clear</button>
+          <button class="btn btn-danger" type="button" id="delete-workout">Delete workout</button>
           <span class="save-flash" id="save-flash">Saved</span>
         </div>
       </form>
@@ -2273,6 +2606,10 @@
       renderList();
       renderDetail();
     });
+
+    document.getElementById("delete-workout").addEventListener("click", () => {
+      confirmDeleteWorkout(workout.id);
+    });
   }
 
   function escapeHtml(str) {
@@ -2292,10 +2629,11 @@
     state.selectedExerciseId = null;
     state.selectedId = id;
     state.detailExpanded = Boolean(open);
+    if (open) state.panelsOpen.detail = true;
     renderPrs();
     renderList();
     renderDetail();
-    syncDetailCollapsed();
+    syncDetailPanel();
     if (open && els.detailPanel) {
       els.detailPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
@@ -2419,7 +2757,6 @@
     expandDetail();
     renderList();
     renderAddForm();
-    syncDetailCollapsed();
   });
 
   if (els.exportBtn) {
@@ -2440,37 +2777,49 @@
     els.prsAdd.addEventListener("click", () => openPrForm());
   }
 
-  function syncDetailCollapsed() {
+  function syncDetailPanel() {
     if (!els.detailPanel) return;
-    const open = Boolean(state.detailExpanded);
-    els.detailPanel.hidden = !open;
-    els.detailPanel.classList.toggle("is-collapsed", !open);
-    els.detailPanel.setAttribute("aria-expanded", open ? "true" : "false");
-    if (els.detailCollapseHint) {
-      els.detailCollapseHint.textContent = "Click to close";
+
+    const workout = state.selectedId
+      ? allWorkouts().find((w) => w.id === state.selectedId)
+      : null;
+    let title = "Session details";
+    let meta = "";
+    if (state.mode === "add") title = "Add workout";
+    else if (state.mode === "pr-form") title = "Add PR";
+    else if (state.mode === "exercise") title = "Progression";
+    else if (workout) {
+      title = workout.title;
+      meta = `${formatDate(workout.date)} · ${workout.type}`;
     }
-    const title = els.detailCollapseBar?.querySelector(".detail-collapse-title");
-    if (title) {
-      const workout = state.selectedId
-        ? allWorkouts().find((w) => w.id === state.selectedId)
-        : null;
-      if (state.mode === "add") title.textContent = "Add workout";
-      else if (state.mode === "pr-form") title.textContent = "Add PR";
-      else if (state.mode === "exercise") title.textContent = "Progression";
-      else if (workout) title.textContent = workout.title;
-      else title.textContent = "Session details";
-    }
+
+    if (els.detailPanelTitle) els.detailPanelTitle.textContent = title;
+    if (els.detailPanelMeta) els.detailPanelMeta.textContent = meta;
+    els.detailPanel.setAttribute("aria-expanded", state.detailExpanded ? "true" : "false");
+    syncPanel("detail");
   }
 
   function expandDetail() {
     state.detailExpanded = true;
-    syncDetailCollapsed();
+    state.panelsOpen.detail = true;
+    savePanelsUi();
+    syncDetailPanel();
   }
 
-  if (els.detailCollapseBar) {
-    els.detailCollapseBar.addEventListener("click", () => {
+  document.querySelectorAll("[data-panel-toggle]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.panelToggle;
+      if (!id) return;
+      if (id === "detail" && !state.detailExpanded) return;
+      togglePanel(id);
+    });
+  });
+
+  if (els.detailPanelClose) {
+    els.detailPanelClose.addEventListener("click", (e) => {
+      e.stopPropagation();
       state.detailExpanded = false;
-      syncDetailCollapsed();
+      syncDetailPanel();
     });
   }
 
@@ -2500,6 +2849,38 @@
       listClickId = null;
     }, 320);
   });
+
+  if (els.chartFormulaToggle) {
+    els.chartFormulaToggle.addEventListener("click", () => {
+      state.formulaVisible = true;
+      syncFormulaVisibility();
+    });
+  }
+
+  if (els.chartFormula) {
+    els.chartFormula.addEventListener("dblclick", () => {
+      state.formulaVisible = false;
+      syncFormulaVisibility();
+    });
+  }
+
+  if (els.calendarPrev) {
+    els.calendarPrev.addEventListener("click", () => {
+      if (!window.ForgeCalendar) return;
+      state.calendarMonth = window.ForgeCalendar.shiftMonth(state.calendarMonth, -1);
+      savePanelsUi();
+      renderCalendar();
+    });
+  }
+
+  if (els.calendarNext) {
+    els.calendarNext.addEventListener("click", () => {
+      if (!window.ForgeCalendar) return;
+      state.calendarMonth = window.ForgeCalendar.shiftMonth(state.calendarMonth, 1);
+      savePanelsUi();
+      renderCalendar();
+    });
+  }
 
   els.filters.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-filter]");
@@ -2557,7 +2938,9 @@
 
   ensurePastDueComplete();
   ensureSeedPrs();
-  syncDetailCollapsed();
+  syncFormulaVisibility();
+  syncAllPanels();
+  syncDetailPanel();
   renderPrs();
   renderStats();
   renderWorkload();

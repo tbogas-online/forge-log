@@ -31,13 +31,20 @@
         <button class="filter" data-filter="FBB">FBB</button>
         <button class="filter" data-filter="RUN">Run</button>
         <button class="filter" data-filter="WALK">Walk</button>
+        <button class="filter" data-filter="HIT">HIT</button>
+        <button class="filter" data-filter="OTHER">Other</button>
         <button class="filter" data-filter="LOGGED">Complete</button>
       </nav>
 
-      <section class="workload-panel" aria-label="Workload graph">
+      <section class="panel-block workload-panel" id="workload-panel" data-panel="workload">
+        <button type="button" class="panel-collapse-bar" data-panel-toggle="workload" aria-expanded="true">
+          <span class="panel-collapse-title">Workload</span>
+          <span class="panel-collapse-meta" id="workload-panel-meta"></span>
+          <span class="panel-collapse-hint">Click to collapse</span>
+        </button>
+        <div class="panel-body" id="workload-panel-body">
         <div class="workload-head">
           <div>
-            <h2>Workload</h2>
             <p class="workload-caption" id="workload-caption">Weekly training load</p>
             <p class="workload-period" id="workload-period"></p>
           </div>
@@ -68,15 +75,59 @@
           <div class="chart-balloon" id="chart-balloon" hidden></div>
         </div>
         <div class="workload-legend" id="workload-legend"></div>
-        <p class="workload-formula" id="workload-formula"></p>
+        <div class="workload-formula-wrap">
+          <button type="button" class="workload-formula-toggle" id="workload-formula-toggle">
+            Click for load formula
+          </button>
+          <p class="workload-formula" id="workload-formula" hidden title="Double-click to hide"></p>
+        </div>
+        </div>
+      </section>
+
+      <section class="panel-block coach-panel is-collapsed" id="coach-panel" data-panel="coach">
+        <button type="button" class="panel-collapse-bar" data-panel-toggle="coach" aria-expanded="false">
+          <span class="panel-collapse-title">AI Coach</span>
+          <span class="panel-collapse-meta" id="coach-panel-meta"></span>
+          <span class="panel-collapse-hint">Click to expand</span>
+        </button>
+        <div class="panel-body" id="coach-panel-body" hidden>
+          <p class="coach-caption">Recommendations based on your training log</p>
+          <div class="coach-insights" id="coach-insights"></div>
+        </div>
+      </section>
+
+      <section class="panel-block calendar-panel is-collapsed" id="calendar-panel" data-panel="calendar">
+        <button type="button" class="panel-collapse-bar" data-panel-toggle="calendar" aria-expanded="false">
+          <span class="panel-collapse-title">Training calendar</span>
+          <span class="panel-collapse-meta" id="calendar-panel-meta"></span>
+          <span class="panel-collapse-hint">Click to expand</span>
+        </button>
+        <div class="panel-body" id="calendar-panel-body" hidden>
+          <div class="calendar-head">
+            <button type="button" class="btn btn-ghost btn-small" id="calendar-prev" aria-label="Previous month">‹</button>
+            <div>
+              <h2 id="calendar-title">Calendar</h2>
+              <p class="calendar-caption">Daily mix — donut = session types</p>
+            </div>
+            <button type="button" class="btn btn-ghost btn-small" id="calendar-next" aria-label="Next month">›</button>
+          </div>
+          <div class="calendar-weekdays" aria-hidden="true">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+          <div class="calendar-grid" id="calendar-grid"></div>
+          <div class="calendar-legend" id="calendar-legend"></div>
+        </div>
       </section>
 
       <main class="layout">
-        <section class="list-panel" aria-label="Workout list">
+        <section class="panel-block list-panel is-collapsed" id="sessions-panel" data-panel="sessions">
+          <button type="button" class="panel-collapse-bar" data-panel-toggle="sessions" aria-expanded="false">
+            <span class="panel-collapse-title">Sessions</span>
+            <span class="panel-collapse-meta" id="sessions-panel-meta"></span>
+            <span class="panel-collapse-hint">Click to expand</span>
+          </button>
+          <div class="panel-body" id="sessions-panel-body" hidden>
           <div class="list-head">
-            <div class="list-head-row">
-              <h2>Sessions</h2>
-            </div>
             <label class="search-wrap">
               <span class="sr-only">Search</span>
               <input
@@ -96,40 +147,51 @@
               Add workout
             </button>
           </div>
+          </div>
         </section>
 
-        <section class="detail-panel" id="detail-panel" aria-live="polite" aria-expanded="false" hidden>
-          <div class="detail-collapse-bar" id="detail-collapse-bar" title="Click to close">
-            <span class="detail-collapse-title">Session details</span>
-            <span class="list-collapse-hint" id="detail-collapse-hint">Click to close</span>
+        <section class="panel-block detail-panel" id="detail-panel" data-panel="detail" aria-live="polite" aria-expanded="false" hidden>
+          <div class="panel-collapse-wrap">
+            <button type="button" class="panel-collapse-bar" data-panel-toggle="detail" aria-expanded="true">
+              <span class="panel-collapse-title" id="detail-panel-title">Session details</span>
+              <span class="panel-collapse-meta" id="detail-panel-meta"></span>
+              <span class="panel-collapse-hint" id="detail-collapse-hint">Click to collapse</span>
+            </button>
+            <button type="button" class="panel-close-btn" id="detail-panel-close" aria-label="Close session details">×</button>
           </div>
+          <div class="panel-body" id="detail-panel-body">
           <div class="detail-body" id="detail">
             <div class="empty-detail">
               <p class="empty-kicker">Session details</p>
               <p>Double-click a session in the list to open it here.</p>
             </div>
           </div>
+          </div>
         </section>
       </main>
 
-      <section class="prs-panel" aria-label="Personal records">
-        <div class="prs-head">
-          <div>
-            <h2>Personal Records</h2>
-            <p class="prs-caption">Auto-detected from logs, or add / edit manually from this list</p>
-          </div>
+      <section class="panel-block prs-panel is-collapsed" id="prs-panel" data-panel="prs">
+        <button type="button" class="panel-collapse-bar" data-panel-toggle="prs" aria-expanded="false">
+          <span class="panel-collapse-title">Personal Records</span>
+          <span class="panel-collapse-meta" id="prs-panel-meta"></span>
+          <span class="panel-collapse-hint">Click to expand</span>
+        </button>
+        <div class="panel-body" id="prs-panel-body" hidden>
+          <p class="prs-caption">Auto-detected from logs, or add / edit manually from this list</p>
           <div class="prs-actions">
             <button type="button" class="btn btn-ghost btn-small" id="prs-refresh">Refresh</button>
             <button type="button" class="btn btn-primary btn-small" id="prs-add">Add PR</button>
           </div>
+          <div class="prs-grid" id="prs-grid"></div>
         </div>
-        <div class="prs-grid" id="prs-grid"></div>
       </section>
     </div>
     <div class="open-balloon" id="open-balloon" hidden></div>
 
     <script src="data/workouts.js"></script>
     <script src="prs.js"></script>
+    <script src="coach.js"></script>
+    <script src="calendar.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
