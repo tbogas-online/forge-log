@@ -747,6 +747,7 @@
     if (!els.balloon) return;
     els.balloon.hidden = true;
     els.balloon.innerHTML = "";
+    delete els.balloon.dataset.weekIndex;
   }
 
   function firstContentLine(section) {
@@ -878,6 +879,8 @@
     els.balloon.style.top = `${top}px`;
   }
 
+  let chartBalloonOutsideBound = false;
+
   function bindChartBalloon(weeks) {
     if (!els.chart || !els.balloon) return;
     hideChartBalloon();
@@ -895,9 +898,19 @@
       if (!week) return;
       clearHide();
       els.balloon.hidden = false;
+      els.balloon.dataset.weekIndex = String(index);
       els.balloon.innerHTML = renderBalloonContent(week);
       positionBalloon(hitEl);
     };
+
+    if (!chartBalloonOutsideBound) {
+      chartBalloonOutsideBound = true;
+      document.addEventListener("pointerdown", (e) => {
+        if (!els.balloon || els.balloon.hidden) return;
+        if (e.target.closest("#workload-chart") || e.target.closest("#chart-balloon")) return;
+        hideChartBalloon();
+      });
+    }
 
     els.chart.querySelectorAll(".chart-hit").forEach((hit) => {
       hit.addEventListener("mouseenter", () => {
@@ -911,6 +924,15 @@
         hideTimer = setTimeout(() => {
           if (!els.balloon.matches(":hover")) hideChartBalloon();
         }, 160);
+      });
+      hit.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const index = Number(hit.dataset.weekIndex);
+        if (!els.balloon.hidden && els.balloon.dataset.weekIndex === String(index)) {
+          hideChartBalloon();
+          return;
+        }
+        showWeek(index, hit);
       });
     });
 

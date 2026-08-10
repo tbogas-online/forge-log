@@ -766,23 +766,6 @@ body {
   flex-shrink: 0;
 }
 
-@media (max-width: 700px) {
-  .calendar-donut {
-    width: 2rem;
-    height: 2rem;
-  }
-
-  .calendar-donut-hole {
-    width: 1.2rem;
-    height: 1.2rem;
-    font-size: 0.65rem;
-  }
-
-  .calendar-cell {
-    min-height: 4rem;
-    padding: 0.25rem 0.1rem 0.35rem;
-  }
-}
 
 .prs-panel {
   z-index: 4;
@@ -1697,11 +1680,6 @@ body {
   margin-bottom: 1rem;
 }
 
-@media (max-width: 700px) {
-  .activity-metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
 
 .metric {
   border: 1px solid var(--line);
@@ -2004,5 +1982,247 @@ body {
 
   .form-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .app {
+    width: calc(100% - 1rem);
+    padding: 1.25rem 0 2rem;
+  }
+
+  .brand {
+    font-size: clamp(2.4rem, 12vw, 3.2rem);
+  }
+
+  .btn,
+  .filter,
+  .legend-item,
+  button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn,
+  .filter {
+    min-height: 44px;
+  }
+
+  .btn-small,
+  .coach-action {
+    min-height: 44px;
+  }
+
+  .legend-item {
+    min-height: 44px;
+    padding: 0.45rem 0.7rem;
+    flex-shrink: 0;
+  }
+
+  .panel-collapse-bar {
+    padding: 0.75rem 0.85rem;
+    align-items: center;
+  }
+
+  .panel-collapse-title {
+    font-size: 1.2rem;
+  }
+
+  .panel-collapse-hint {
+    display: none;
+  }
+
+  .panel-collapse-meta {
+    font-size: 0.72rem;
+    max-width: 42%;
+  }
+
+  .panel-close-btn {
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .panel-body,
+  .detail-body {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .detail-body {
+    padding: 0.85rem;
+  }
+
+  .filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-inline: -0.25rem;
+    padding-inline: 0.25rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.15rem;
+  }
+
+  .filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter {
+    flex-shrink: 0;
+    padding: 0.55rem 1rem;
+  }
+
+  .stats {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    width: 100%;
+    margin-inline: -0.25rem;
+    padding-inline: 0.25rem;
+    padding-bottom: 0.15rem;
+  }
+
+  .stats::-webkit-scrollbar {
+    display: none;
+  }
+
+  .stat-group {
+    flex-shrink: 0;
+  }
+
+  .workload-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.65rem;
+  }
+
+  .workload-summary {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .interval-presets {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-inline: -0.25rem;
+    padding-inline: 0.25rem;
+    padding-bottom: 0.15rem;
+  }
+
+  .interval-presets::-webkit-scrollbar {
+    display: none;
+  }
+
+  .interval-presets .btn-small,
+  .interval-presets .filter {
+    flex-shrink: 0;
+    min-height: 44px;
+  }
+
+  .interval-custom label {
+    flex: 1 1 calc(50% - 0.35rem);
+    min-width: 8.5rem;
+  }
+
+  .workload-legend,
+  .calendar-legend {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0.5rem;
+    margin-inline: -0.25rem;
+    padding-inline: 0.25rem;
+    padding-bottom: 0.15rem;
+  }
+
+  .workload-legend::-webkit-scrollbar,
+  .calendar-legend::-webkit-scrollbar {
+    display: none;
+  }
+
+  .workout-list {
+    max-height: min(50dvh, calc(5 * 4.85rem + 1rem));
+  }
+
+  .workout-item {
+    padding: 0.9rem;
+    min-height: 44px;
+  }
+
+  .prs-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .coach-card {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.65rem;
+  }
+
+  .coach-feedback {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  .coach-vote {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  .chart-balloon {
+    min-width: 0;
+    max-width: calc(100vw - 1.5rem);
+  }
+
+  .calendar-donut {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .calendar-donut-hole {
+    width: 1.2rem;
+    height: 1.2rem;
+    font-size: 0.65rem;
+  }
+
+  .calendar-cell {
+    min-height: 4rem;
+    padding: 0.25rem 0.1rem 0.35rem;
+  }
+
+  .activity-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  input,
+  select,
+  textarea,
+  .field input,
+  .field textarea,
+  .field select,
+  .search-wrap input,
+  .interval-custom input[type="date"] {
+    font-size: 16px;
   }
 }
