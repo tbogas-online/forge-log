@@ -19,4 +19,3 @@ Then visit http://localhost:5173
 - Search lifts and workout names
 - Log score, strength load / 1RM, RPE, notes
 - Data saved in browser `localStorage`
-"# forge-log" 
