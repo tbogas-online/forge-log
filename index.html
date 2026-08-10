@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forge Log — Workout Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="app">
+      <header class="top">
+        <div class="brand-block">
+          <p class="brand">Forge Log</p>
+          <p class="tagline">Track every WOD, Hybrid, FBB &amp; Run</p>
+        </div>
+        <div class="stats" id="stats" aria-label="Training summary"></div>
+      </header>
+      <p class="app-banner" id="app-banner" hidden></p>
+
+      <nav class="filters" id="filters" aria-label="Filter by type">
+        <button class="filter is-active" data-filter="ALL">All</button>
+        <button class="filter" data-filter="WOD">WOD</button>
+        <button class="filter" data-filter="HYBRID">Hybrid</button>
+        <button class="filter" data-filter="FBB">FBB</button>
+        <button class="filter" data-filter="RUN">Run</button>
+        <button class="filter" data-filter="WALK">Walk</button>
+        <button class="filter" data-filter="LOGGED">Complete</button>
+      </nav>
+
+      <section class="workload-panel" aria-label="Workload graph">
+        <div class="workload-head">
+          <div>
+            <h2>Workload</h2>
+            <p class="workload-caption" id="workload-caption">Weekly training load</p>
+            <p class="workload-period" id="workload-period"></p>
+          </div>
+          <div class="workload-summary" id="workload-summary"></div>
+        </div>
+        <div class="interval-bar">
+          <div class="interval-presets" id="interval-presets" role="group" aria-label="Workload interval">
+            <button type="button" class="filter" data-interval="7">7 days</button>
+            <button type="button" class="filter is-active" data-interval="30">30 days</button>
+            <button type="button" class="filter" data-interval="90">90 days</button>
+            <button type="button" class="filter" data-interval="all">All</button>
+            <button type="button" class="filter" data-interval="custom" id="interval-custom-btn">Interval</button>
+          </div>
+          <div class="interval-custom" id="interval-custom" hidden>
+            <label>
+              <span>From</span>
+              <input type="date" id="interval-from" />
+            </label>
+            <label>
+              <span>To</span>
+              <input type="date" id="interval-to" />
+            </label>
+            <button type="button" class="btn btn-primary btn-small" id="interval-apply">Apply</button>
+          </div>
+        </div>
+        <div class="workload-chart-wrap">
+          <svg id="workload-chart" viewBox="0 0 920 280" role="img" aria-label="Weekly workload chart"></svg>
+          <div class="chart-balloon" id="chart-balloon" hidden></div>
+        </div>
+        <div class="workload-legend" id="workload-legend"></div>
+        <p class="workload-formula" id="workload-formula"></p>
+      </section>
+
+      <main class="layout">
+        <section class="list-panel" aria-label="Workout list">
+          <div class="list-head">
+            <div class="list-head-row">
+              <h2>Sessions</h2>
+            </div>
+            <label class="search-wrap">
+              <span class="sr-only">Search</span>
+              <input
+                id="search"
+                type="search"
+                placeholder="Search lifts, WODs…"
+                autocomplete="off"
+              />
+            </label>
+          </div>
+          <ul class="workout-list" id="workout-list"></ul>
+          <div class="list-actions">
+            <button class="btn btn-ghost btn-small" type="button" id="export-csv-btn">
+              Export CSV
+            </button>
+            <button class="btn btn-primary btn-small" type="button" id="add-workout-btn">
+              Add workout
+            </button>
+          </div>
+        </section>
+
+        <section class="detail-panel" id="detail-panel" aria-live="polite" aria-expanded="false" hidden>
+          <div class="detail-collapse-bar" id="detail-collapse-bar" title="Click to close">
+            <span class="detail-collapse-title">Session details</span>
+            <span class="list-collapse-hint" id="detail-collapse-hint">Click to close</span>
+          </div>
+          <div class="detail-body" id="detail">
+            <div class="empty-detail">
+              <p class="empty-kicker">Session details</p>
+              <p>Double-click a session in the list to open it here.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <section class="prs-panel" aria-label="Personal records">
+        <div class="prs-head">
+          <div>
+            <h2>Personal Records</h2>
+            <p class="prs-caption">Auto-detected from logs, or add / edit manually from this list</p>
+          </div>
+          <div class="prs-actions">
+            <button type="button" class="btn btn-ghost btn-small" id="prs-refresh">Refresh</button>
+            <button type="button" class="btn btn-primary btn-small" id="prs-add">Add PR</button>
+          </div>
+        </div>
+        <div class="prs-grid" id="prs-grid"></div>
+      </section>
+    </div>
+    <div class="open-balloon" id="open-balloon" hidden></div>
+
+    <script src="data/workouts.js"></script>
+    <script src="prs.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
