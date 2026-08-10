@@ -5,6 +5,7 @@
   const COACH_FEEDBACK_KEY = "forge-log-coach-feedback-v1";
   const PANELS_UI_KEY = "forge-log-panels-ui-v2";
   const LEGACY_CALENDAR_UI_KEY = "forge-log-calendar-ui-v1";
+  const LAST_ACCESS_KEY = "forge-log-last-access-v1";
 
   const PANEL_IDS = ["workload", "coach", "calendar", "sessions", "prs", "detail"];
 
@@ -63,6 +64,8 @@
     search: document.getElementById("search"),
     filters: document.getElementById("filters"),
     addBtn: document.getElementById("add-workout-btn"),
+    addFooterBtn: document.getElementById("add-workout-footer-btn"),
+    lastAccess: document.getElementById("last-access"),
     exportBtn: document.getElementById("export-csv-btn"),
     prsGrid: document.getElementById("prs-grid"),
     prsRefresh: document.getElementById("prs-refresh"),
@@ -747,7 +750,7 @@
     if (!els.balloon) return;
     els.balloon.hidden = true;
     els.balloon.innerHTML = "";
-    delete els.balloon.dataset.weekIndex;
+    delete els.balloon.dataset.activeWeekIndex;
   }
 
   function firstContentLine(section) {
@@ -898,16 +901,16 @@
       if (!week) return;
       clearHide();
       els.balloon.hidden = false;
-      els.balloon.dataset.weekIndex = String(index);
+      els.balloon.dataset.activeWeekIndex = String(index);
       els.balloon.innerHTML = renderBalloonContent(week);
       positionBalloon(hitEl);
     };
 
     if (!chartBalloonOutsideBound) {
       chartBalloonOutsideBound = true;
-      document.addEventListener("pointerdown", (e) => {
+      document.addEventListener("click", (e) => {
         if (!els.balloon || els.balloon.hidden) return;
-        if (e.target.closest("#workload-chart") || e.target.closest("#chart-balloon")) return;
+        if (e.target.closest(".chart-hit") || e.target.closest("#chart-balloon")) return;
         hideChartBalloon();
       });
     }
@@ -928,7 +931,10 @@
       hit.addEventListener("click", (e) => {
         e.stopPropagation();
         const index = Number(hit.dataset.weekIndex);
-        if (!els.balloon.hidden && els.balloon.dataset.weekIndex === String(index)) {
+        if (
+          !els.balloon.hidden &&
+          els.balloon.dataset.activeWeekIndex === String(index)
+        ) {
           hideChartBalloon();
           return;
         }
@@ -2772,12 +2778,34 @@
     showBanner(`Exported ${dayCount} day${dayCount === 1 ? "" : "s"} to CSV.`);
   }
 
-  els.addBtn.addEventListener("click", () => {
+  function formatAccessTime(iso) {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  }
+
+  function initLastAccess() {
+    if (!els.lastAccess) return;
+    const previous = localStorage.getItem(LAST_ACCESS_KEY);
+    els.lastAccess.textContent = previous
+      ? `Last access: ${formatAccessTime(previous)}`
+      : "First visit — welcome!";
+    localStorage.setItem(LAST_ACCESS_KEY, new Date().toISOString());
+  }
+
+  function startAddWorkout() {
     state.mode = "add";
     expandDetail();
     renderList();
     renderAddForm();
-  });
+    els.detailPanel?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  els.addBtn?.addEventListener("click", startAddWorkout);
+  els.addFooterBtn?.addEventListener("click", startAddWorkout);
 
   if (els.exportBtn) {
     els.exportBtn.addEventListener("click", exportCsv);
@@ -2958,6 +2986,7 @@
 
   ensurePastDueComplete();
   ensureSeedPrs();
+  initLastAccess();
   state.panelsOpen = { ...DEFAULT_PANELS_OPEN };
   syncFormulaVisibility();
   syncAllPanels();
