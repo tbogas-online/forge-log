@@ -197,6 +197,20 @@
     </div>
     <div class="chart-balloon" id="chart-balloon" hidden></div>
     <div class="open-balloon" id="open-balloon" hidden></div>
+    <div class="add-workout-modal" id="add-workout-modal" hidden>
+      <button type="button" class="add-workout-backdrop" id="add-workout-backdrop" aria-label="Close add workout"></button>
+      <div
+        class="add-workout-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-workout-title"
+      >
+        <div class="add-workout-sheet-head">
+          <button type="button" class="add-workout-close" id="add-workout-close" aria-label="Close">×</button>
+        </div>
+        <div class="add-workout-host" id="add-workout-host"></div>
+      </div>
+    </div>
 
     <script src="data/workouts.js"></script>
     <script src="prs.js"></script>

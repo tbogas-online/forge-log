@@ -66,6 +66,10 @@
     addBtn: document.getElementById("add-workout-btn"),
     addFooterBtn: document.getElementById("add-workout-footer-btn"),
     lastAccess: document.getElementById("last-access"),
+    addWorkoutModal: document.getElementById("add-workout-modal"),
+    addWorkoutHost: document.getElementById("add-workout-host"),
+    addWorkoutClose: document.getElementById("add-workout-close"),
+    addWorkoutBackdrop: document.getElementById("add-workout-backdrop"),
     exportBtn: document.getElementById("export-csv-btn"),
     prsGrid: document.getElementById("prs-grid"),
     prsRefresh: document.getElementById("prs-refresh"),
@@ -1913,12 +1917,34 @@
     return result;
   }
 
+  function openAddWorkoutModal() {
+    if (!els.addWorkoutModal) return;
+    els.addWorkoutModal.hidden = false;
+    document.body.classList.add("add-workout-open");
+  }
+
+  function closeAddWorkoutModal() {
+    if (!els.addWorkoutModal) return;
+    els.addWorkoutModal.hidden = true;
+    document.body.classList.remove("add-workout-open");
+    if (els.addWorkoutHost) els.addWorkoutHost.innerHTML = "";
+  }
+
+  function finishAddWorkout() {
+    closeAddWorkoutModal();
+    state.mode = "detail";
+    renderList();
+    renderDetail();
+  }
+
   function renderImportFeedback(report) {
     const added = report.accepted || [];
     const failed = report.failed || [];
     state.mode = "import-result";
+    if (!els.addWorkoutHost) return;
+    openAddWorkoutModal();
 
-    els.detail.innerHTML = `
+    els.addWorkoutHost.innerHTML = `
       <div class="import-report">
         <h1>Import result</h1>
         <p class="hint">${added.length} added · ${failed.length} failed</p>
@@ -1959,25 +1985,23 @@
     `;
 
     document.getElementById("import-done").addEventListener("click", () => {
-      state.mode = "detail";
       if (added.length) state.selectedId = added[added.length - 1].id;
-      renderList();
-      renderDetail();
+      finishAddWorkout();
     });
 
     document.getElementById("import-again").addEventListener("click", () => {
-      state.mode = "add";
-      renderList();
       renderAddForm();
     });
   }
 
   function renderAddForm() {
+    if (!els.addWorkoutHost) return;
     state.mode = "add";
-    els.detail.innerHTML = `
+    openAddWorkoutModal();
+    els.addWorkoutHost.innerHTML = `
       <form class="add-form" id="add-form">
         <div>
-          <h1>Add workout</h1>
+          <h1 id="add-workout-title">Add workout</h1>
           <p class="hint">Paste one or many sessions. Multiple WODs/Hybrids (date headers) or Run/Walk lines are split into separate entries.</p>
         </div>
         <label class="field full">
@@ -2043,9 +2067,7 @@
     });
 
     document.getElementById("cancel-add").addEventListener("click", () => {
-      state.mode = "detail";
-      renderList();
-      renderDetail();
+      finishAddWorkout();
     });
 
     textarea.focus();
@@ -2797,15 +2819,17 @@
   }
 
   function startAddWorkout() {
-    state.mode = "add";
-    expandDetail();
-    renderList();
     renderAddForm();
-    els.detailPanel?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   els.addBtn?.addEventListener("click", startAddWorkout);
   els.addFooterBtn?.addEventListener("click", startAddWorkout);
+  els.addWorkoutClose?.addEventListener("click", finishAddWorkout);
+  els.addWorkoutBackdrop?.addEventListener("click", finishAddWorkout);
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape" || els.addWorkoutModal?.hidden) return;
+    finishAddWorkout();
+  });
 
   if (els.exportBtn) {
     els.exportBtn.addEventListener("click", exportCsv);
