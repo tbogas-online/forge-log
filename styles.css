@@ -1351,6 +1351,14 @@ body {
   letter-spacing: 0.02em;
 }
 
+.footer-note {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+}
+
 .add-workout-modal {
   position: fixed;
   inset: 0;
