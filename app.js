@@ -65,7 +65,6 @@
     stats: document.getElementById("stats"),
     search: document.getElementById("search"),
     filters: document.getElementById("filters"),
-    addBtn: document.getElementById("add-workout-btn"),
     addFooterBtn: document.getElementById("add-workout-footer-btn"),
     lastAccess: document.getElementById("last-access"),
     lastCodeUpdate: document.getElementById("last-code-update"),
@@ -3052,7 +3051,6 @@
     renderAddForm();
   }
 
-  els.addBtn?.addEventListener("click", startAddWorkout);
   els.addFooterBtn?.addEventListener("click", startAddWorkout);
   els.addWorkoutClose?.addEventListener("click", finishAddWorkout);
   els.addWorkoutBackdrop?.addEventListener("click", finishAddWorkout);
