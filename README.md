@@ -2,6 +2,8 @@
 
 Local workout tracker for WOD / Hybrid / FBB sessions.
 
+See [CHANGELOG.md](CHANGELOG.md) for release history.
+
 ## Run
 
 Open `index.html` in a browser, or from this folder:
