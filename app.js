@@ -1072,7 +1072,7 @@
     els.openBalloon.hidden = false;
     els.openBalloon.innerHTML = `
       <p class="open-balloon-title">${escapeHtml(clip(workout.title, 36))}</p>
-      <button type="button" class="open-balloon-action" data-action="complete">Mark complete</button>
+      <button type="button" class="open-balloon-action" data-action="${isCompleted(workout) ? "reopen" : "complete"}">${isCompleted(workout) ? "Mark open" : "Mark complete"}</button>
       <button type="button" class="open-balloon-action is-danger" data-action="delete">Delete</button>
     `;
 
@@ -1095,6 +1095,15 @@
         setCompleted(workout, true);
         hideOpenBalloon();
         showBanner("Marked complete.");
+        renderStats();
+        renderList();
+        if (state.selectedId === workout.id) renderDetail();
+        return;
+      }
+      if (action === "reopen") {
+        setCompleted(workout, false);
+        hideOpenBalloon();
+        showBanner("Marked open.");
         renderStats();
         renderList();
         if (state.selectedId === workout.id) renderDetail();
@@ -1131,7 +1140,8 @@
         entry.strengthLoad ||
         entry.rpe ||
         entry.notes ||
-        entry.avgPace
+        entry.avgPace ||
+        entry.elevation
     );
   }
 
@@ -1791,11 +1801,11 @@
         const logged = isLogged(w.id) ? "is-logged" : "";
         const previewText = (() => {
           if (w.activity) {
-            const pace = paceText(w.activity) || entry.avgPace;
+            const fields = getEffectiveLogFields(w, entry);
             const parts = [];
-            if (w.activity.duration || entry.score) parts.push(entry.score || w.activity.duration);
-            if (w.activity.distanceKm != null) parts.push(`${w.activity.distanceKm} km`);
-            if (pace) parts.push(pace);
+            if (fields.score) parts.push(fields.score);
+            if (fields.strengthLoad) parts.push(`${fields.strengthLoad} km`);
+            if (fields.avgPace) parts.push(fields.avgPace);
             return parts.join(" · ");
           }
           return entry.score || "";
@@ -2443,6 +2453,37 @@
     return news;
   }
 
+  function getEffectiveLogFields(workout, entry = {}) {
+    if (!workout.activity) {
+      return {
+        score: entry.score || "",
+        strengthLoad: entry.strengthLoad || "",
+        avgPace: entry.avgPace || "",
+        elevation: entry.elevation != null ? String(entry.elevation) : "",
+      };
+    }
+
+    const duration = entry.score || workout.activity.duration || "";
+    const distanceRaw =
+      entry.strengthLoad ||
+      (workout.activity.distanceKm != null ? String(workout.activity.distanceKm) : "");
+    const distanceMatch = String(distanceRaw).replace(/,/g, ".").match(/(\d+(?:\.\d+)?)/);
+    const distanceKm = distanceMatch ? Number(distanceMatch[1]) : workout.activity.distanceKm;
+    const elevation =
+      entry.elevation != null
+        ? String(entry.elevation)
+        : workout.activity.elevationM != null
+          ? String(workout.activity.elevationM)
+          : "";
+
+    return {
+      score: duration,
+      strengthLoad: distanceRaw,
+      avgPace: entry.avgPace || paceText({ duration, distanceKm }) || "",
+      elevation,
+    };
+  }
+
   function renderDetail() {
     syncDetailPanel();
 
@@ -2478,29 +2519,30 @@
       strengthLoad: "",
       rpe: "",
       notes: "",
+      avgPace: "",
+      elevation: "",
     };
     const completed = isCompleted(workout);
     const pastDue = isPastDue(workout);
     const meta = primaryScoreMeta(workout);
+    const fields = getEffectiveLogFields(workout, entry);
     const subBits = [formatDate(workout.date)];
     if (workout.classTime) subBits.push(workout.classTime);
     if (workout.box) subBits.push(workout.box);
     if (meta.timeCap) subBits.push(`Cap ${meta.timeCap}`);
-    const pace = paceText(workout.activity);
-    if (pace) subBits.push(pace);
+    if (fields.avgPace) subBits.push(fields.avgPace);
     if (pastDue) subBits.push("Past due");
 
     const metrics = workout.activity
       ? `
       <div class="activity-metrics">
-        <div class="metric"><strong>${escapeHtml(workout.activity.duration || "—")}</strong><span>Duration</span></div>
-        <div class="metric"><strong>${workout.activity.distanceKm != null ? `${workout.activity.distanceKm} km` : "—"}</strong><span>Distance</span></div>
-        <div class="metric"><strong>${escapeHtml(pace || "—")}</strong><span>Avg pace</span></div>
-        <div class="metric"><strong>${workout.activity.elevationM != null ? `${workout.activity.elevationM} m` : "—"}</strong><span>Elevation</span></div>
+        <div class="metric"><strong>${escapeHtml(fields.score || "—")}</strong><span>Duration</span></div>
+        <div class="metric"><strong>${fields.strengthLoad ? `${escapeHtml(fields.strengthLoad)} km` : "—"}</strong><span>Distance</span></div>
+        <div class="metric"><strong>${escapeHtml(fields.avgPace || "—")}</strong><span>Avg pace</span></div>
+        <div class="metric"><strong>${fields.elevation ? `${escapeHtml(fields.elevation)} m` : "—"}</strong><span>Elevation</span></div>
       </div>`
       : "";
 
-    const defaultScore = entry.score || workout.activity?.duration || "";
     const openPill = completed
       ? ""
       : `<button type="button" class="status-pill is-open" id="detail-open-menu" aria-haspopup="true">Open</button>`;
@@ -2534,30 +2576,35 @@
 
       <form class="log-form" id="log-form">
         <h2>Your log</h2>
+        <div class="check-row log-status-row">
+          <input type="checkbox" id="log-completed" name="completed" ${completed ? "checked" : ""} />
+          <label for="log-completed">Session complete</label>
+        </div>
         <div class="form-grid">
           <div class="field">
             <label for="score">${escapeHtml(workout.activity ? "Duration" : meta.scoreLabel)}</label>
-            <input id="score" name="score" value="${escapeAttr(defaultScore)}" placeholder="${meta.scoreType === "time" || workout.activity ? "12:34" : ""}" />
+            <input id="score" name="score" value="${escapeAttr(fields.score)}" placeholder="${meta.scoreType === "time" || workout.activity ? "12:34" : ""}" />
           </div>
           <div class="field">
             <label for="strengthLoad">${workout.activity ? "Distance (km)" : "Strength load / 1RM"}</label>
-            <input id="strengthLoad" name="strengthLoad" value="${escapeAttr(entry.strengthLoad || (workout.activity && workout.activity.distanceKm != null ? String(workout.activity.distanceKm) : ""))}" placeholder="${workout.activity ? "5.02" : "e.g. 120kg / 4x5 @80%"}" />
+            <input id="strengthLoad" name="strengthLoad" value="${escapeAttr(fields.strengthLoad)}" placeholder="${workout.activity ? "5.02" : "e.g. 120kg / 4x5 @80%"}" />
           </div>
           ${
             workout.activity
               ? `<div class="field">
             <label for="avg-pace">Avg pace</label>
-            <input id="avg-pace" name="avgPace" value="${escapeAttr(entry.avgPace || pace || "")}" readonly />
+            <input id="avg-pace" name="avgPace" value="${escapeAttr(fields.avgPace)}" placeholder="5:54 /km" />
+            <span class="field-hint">Auto-calculated from duration and distance; you can edit.</span>
           </div>
           <div class="field">
             <label for="elevation">Elevation (m)</label>
-            <input id="elevation" name="elevation" value="${escapeAttr(entry.elevation != null ? String(entry.elevation) : workout.activity.elevationM != null ? String(workout.activity.elevationM) : "")}" placeholder="11" />
+            <input id="elevation" name="elevation" value="${escapeAttr(fields.elevation)}" placeholder="11" />
           </div>`
               : ""
           }
           <div class="field">
             <label for="rpe">Session RPE</label>
-            <input id="rpe" name="rpe" value="${escapeAttr(entry.rpe || "")}" placeholder="1–10" />
+            <input id="rpe" name="rpe" value="${escapeAttr(entry.rpe || "")}" placeholder="1–10" inputmode="decimal" />
           </div>
           <div class="field full">
             <label for="notes">Notes</label>
@@ -2586,9 +2633,10 @@
     const scoreInput = document.getElementById("score");
     const distanceInput = document.getElementById("strengthLoad");
     const paceInput = document.getElementById("avg-pace");
+    let paceEdited = Boolean(entry.avgPace);
 
     function refreshLogPace() {
-      if (!paceInput || !workout.activity) return;
+      if (!paceInput || !workout.activity || paceEdited) return;
       const duration = scoreInput.value.trim();
       const distanceRaw = distanceInput.value.trim().replace(/,/g, ".");
       const distanceMatch = distanceRaw.match(/(\d+(?:\.\d+)?)/);
@@ -2600,23 +2648,24 @@
     if (workout.activity) {
       scoreInput.addEventListener("input", refreshLogPace);
       distanceInput.addEventListener("input", refreshLogPace);
+      paceInput?.addEventListener("input", () => {
+        paceEdited = true;
+      });
       refreshLogPace();
     }
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+      const completedChecked = document.getElementById("log-completed").checked;
       const payload = {
-        completed: isCompleted(workout),
-        completedManual: getLog(workout.id)?.completedManual || false,
+        completed: completedChecked,
+        completedManual: true,
         score: document.getElementById("score").value.trim(),
         strengthLoad: document.getElementById("strengthLoad").value.trim(),
         rpe: document.getElementById("rpe").value.trim(),
         notes: document.getElementById("notes").value.trim(),
         updatedAt: new Date().toISOString(),
       };
-      if (typeof getLog(workout.id)?.completed === "boolean") {
-        payload.completed = getLog(workout.id).completed;
-      }
       if (workout.activity) {
         payload.avgPace = document.getElementById("avg-pace")?.value.trim() || "";
         payload.elevation = document.getElementById("elevation")?.value.trim() || "";
@@ -2639,15 +2688,7 @@
     document.getElementById("clear-log").addEventListener("click", () => {
       const prev = getLog(workout.id) || {};
       if (prev.deleted) return;
-      if (typeof prev.completed === "boolean") {
-        state.logs[workout.id] = {
-          completed: prev.completed,
-          completedManual: prev.completedManual,
-          updatedAt: new Date().toISOString(),
-        };
-      } else {
-        delete state.logs[workout.id];
-      }
+      delete state.logs[workout.id];
       saveLogs();
       renderPrs();
       renderStats();
@@ -2710,16 +2751,12 @@
     const parts = [];
 
     if (workout.type === "RUN" || workout.type === "WALK") {
+      const fields = getEffectiveLogFields(workout, entry);
       parts.push(workout.title || workout.type);
-      if (workout.activity?.duration) parts.push(`Duration: ${workout.activity.duration}`);
-      if (workout.activity?.distanceKm != null) {
-        parts.push(`Distance: ${workout.activity.distanceKm} km`);
-      }
-      const pace = paceText(workout.activity) || entry.avgPace;
-      if (pace) parts.push(`Avg pace: ${pace}`);
-      if (workout.activity?.elevationM != null) {
-        parts.push(`Elevation: ${workout.activity.elevationM} m`);
-      }
+      if (fields.score) parts.push(`Duration: ${fields.score}`);
+      if (fields.strengthLoad) parts.push(`Distance: ${fields.strengthLoad} km`);
+      if (fields.avgPace) parts.push(`Avg pace: ${fields.avgPace}`);
+      if (fields.elevation) parts.push(`Elevation: ${fields.elevation} m`);
     } else {
       if (workout.title) parts.push(workout.title);
       for (const section of workout.sections || []) {

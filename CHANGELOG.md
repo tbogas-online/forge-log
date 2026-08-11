@@ -7,7 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
-- (nothing yet)
+- Full session log editing: complete/open toggle, editable avg pace, and all run metrics reflect saved log values
+
+### Changed
+- Clear log resets all log fields (including completion status)
+- Open menu on sessions can mark complete or mark open again
 
 ## [2026-08-10]
 
