@@ -1,6 +1,7 @@
 (() => {
   const STORAGE_KEY = "forge-log-entries-v1";
   const CUSTOM_KEY = "forge-log-custom-workouts-v1";
+  const OVERRIDES_KEY = "forge-log-workout-overrides-v1";
   const MANUAL_PR_KEY = "forge-log-manual-prs-v1";
   const COACH_FEEDBACK_KEY = "forge-log-coach-feedback-v1";
   const PANELS_UI_KEY = "forge-log-panels-ui-v2";
@@ -44,6 +45,7 @@
     customTo: "",
     logs: loadLogs(),
     custom: loadCustom(),
+    overrides: loadOverrides(),
     manualPrs: loadManualPrs(),
     coachFeedback: loadCoachFeedback(),
     detailExpanded: false,
@@ -66,6 +68,7 @@
     addBtn: document.getElementById("add-workout-btn"),
     addFooterBtn: document.getElementById("add-workout-footer-btn"),
     lastAccess: document.getElementById("last-access"),
+    lastCodeUpdate: document.getElementById("last-code-update"),
     addWorkoutModal: document.getElementById("add-workout-modal"),
     addWorkoutHost: document.getElementById("add-workout-host"),
     addWorkoutClose: document.getElementById("add-workout-close"),
@@ -331,10 +334,88 @@
     localStorage.setItem(CUSTOM_KEY, JSON.stringify(state.custom));
   }
 
+  function loadOverrides() {
+    try {
+      const data = JSON.parse(localStorage.getItem(OVERRIDES_KEY) || "{}");
+      return data && typeof data === "object" ? data : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function saveOverrides() {
+    localStorage.setItem(OVERRIDES_KEY, JSON.stringify(state.overrides));
+  }
+
+  function isActivityType(type) {
+    return type === "RUN" || type === "WALK";
+  }
+
+  function mergeWorkout(workout) {
+    const override = state.overrides[workout.id];
+    if (!override) return workout;
+    const merged = { ...workout, ...override };
+    if (override.activity === null) {
+      delete merged.activity;
+    } else if (override.activity) {
+      merged.activity = { ...(workout.activity || {}), ...override.activity };
+    }
+    if (override.sections) merged.sections = override.sections;
+    return merged;
+  }
+
+  function sectionsToEditText(sections) {
+    return (sections || [])
+      .map((section) => {
+        const lines = [section.name];
+        if (section.format) lines.push(section.format);
+        if (section.content) lines.push(section.content);
+        return lines.join("\n");
+      })
+      .join("\n\n");
+  }
+
+  function persistWorkoutUpdate(id, patch) {
+    const customIdx = state.custom.findIndex((w) => w.id === id);
+    const base =
+      customIdx >= 0
+        ? state.custom[customIdx]
+        : (window.WORKOUTS || []).find((w) => w.id === id);
+    if (!base) return false;
+
+    const current = mergeWorkout(base);
+    const next = { ...current, ...patch };
+    if (patch.activity === null) {
+      delete next.activity;
+    } else if (patch.activity) {
+      next.activity = { ...(current.activity || {}), ...patch.activity };
+    }
+    if (patch.sections) next.sections = patch.sections;
+
+    if (customIdx >= 0) {
+      state.custom[customIdx] = { ...next, custom: true };
+      saveCustom();
+      return true;
+    }
+
+    state.overrides[id] = {
+      ...state.overrides[id],
+      date: next.date,
+      type: next.type,
+      title: next.title,
+      classTime: next.classTime,
+      box: next.box,
+      sections: next.sections,
+      activity: next.activity ? next.activity : null,
+    };
+    saveOverrides();
+    return true;
+  }
+
   function allWorkouts() {
-    return [...(window.WORKOUTS || []), ...state.custom].filter(
-      (w) => !state.logs[w.id]?.deleted
-    );
+    return [...(window.WORKOUTS || []), ...state.custom]
+      .map(mergeWorkout)
+      .filter((w) => !state.logs[w.id]?.deleted);
   }
 
   function formatDate(iso) {
@@ -1026,6 +1107,8 @@
         completedManual: true,
         updatedAt: new Date().toISOString(),
       };
+      delete state.overrides[id];
+      saveOverrides();
       saveLogs();
       return true;
     }
@@ -1072,7 +1155,7 @@
     els.openBalloon.hidden = false;
     els.openBalloon.innerHTML = `
       <p class="open-balloon-title">${escapeHtml(clip(workout.title, 36))}</p>
-      <button type="button" class="open-balloon-action" data-action="complete">Mark complete</button>
+      <button type="button" class="open-balloon-action" data-action="${isCompleted(workout) ? "reopen" : "complete"}">${isCompleted(workout) ? "Mark open" : "Mark complete"}</button>
       <button type="button" class="open-balloon-action is-danger" data-action="delete">Delete</button>
     `;
 
@@ -1095,6 +1178,15 @@
         setCompleted(workout, true);
         hideOpenBalloon();
         showBanner("Marked complete.");
+        renderStats();
+        renderList();
+        if (state.selectedId === workout.id) renderDetail();
+        return;
+      }
+      if (action === "reopen") {
+        setCompleted(workout, false);
+        hideOpenBalloon();
+        showBanner("Marked open.");
         renderStats();
         renderList();
         if (state.selectedId === workout.id) renderDetail();
@@ -1131,7 +1223,8 @@
         entry.strengthLoad ||
         entry.rpe ||
         entry.notes ||
-        entry.avgPace
+        entry.avgPace ||
+        entry.elevation
     );
   }
 
@@ -1791,11 +1884,11 @@
         const logged = isLogged(w.id) ? "is-logged" : "";
         const previewText = (() => {
           if (w.activity) {
-            const pace = paceText(w.activity) || entry.avgPace;
+            const fields = getEffectiveLogFields(w, entry);
             const parts = [];
-            if (w.activity.duration || entry.score) parts.push(entry.score || w.activity.duration);
-            if (w.activity.distanceKm != null) parts.push(`${w.activity.distanceKm} km`);
-            if (pace) parts.push(pace);
+            if (fields.score) parts.push(fields.score);
+            if (fields.strengthLoad) parts.push(`${fields.strengthLoad} km`);
+            if (fields.avgPace) parts.push(fields.avgPace);
             return parts.join(" · ");
           }
           return entry.score || "";
@@ -2443,6 +2536,37 @@
     return news;
   }
 
+  function getEffectiveLogFields(workout, entry = {}) {
+    if (!workout.activity) {
+      return {
+        score: entry.score || "",
+        strengthLoad: entry.strengthLoad || "",
+        avgPace: entry.avgPace || "",
+        elevation: entry.elevation != null ? String(entry.elevation) : "",
+      };
+    }
+
+    const duration = entry.score || workout.activity.duration || "";
+    const distanceRaw =
+      entry.strengthLoad ||
+      (workout.activity.distanceKm != null ? String(workout.activity.distanceKm) : "");
+    const distanceMatch = String(distanceRaw).replace(/,/g, ".").match(/(\d+(?:\.\d+)?)/);
+    const distanceKm = distanceMatch ? Number(distanceMatch[1]) : workout.activity.distanceKm;
+    const elevation =
+      entry.elevation != null
+        ? String(entry.elevation)
+        : workout.activity.elevationM != null
+          ? String(workout.activity.elevationM)
+          : "";
+
+    return {
+      score: duration,
+      strengthLoad: distanceRaw,
+      avgPace: entry.avgPace || paceText({ duration, distanceKm }) || "",
+      elevation,
+    };
+  }
+
   function renderDetail() {
     syncDetailPanel();
 
@@ -2478,86 +2602,127 @@
       strengthLoad: "",
       rpe: "",
       notes: "",
+      avgPace: "",
+      elevation: "",
     };
     const completed = isCompleted(workout);
     const pastDue = isPastDue(workout);
     const meta = primaryScoreMeta(workout);
-    const subBits = [formatDate(workout.date)];
-    if (workout.classTime) subBits.push(workout.classTime);
-    if (workout.box) subBits.push(workout.box);
-    if (meta.timeCap) subBits.push(`Cap ${meta.timeCap}`);
-    const pace = paceText(workout.activity);
-    if (pace) subBits.push(pace);
-    if (pastDue) subBits.push("Past due");
+    const fields = getEffectiveLogFields(workout, entry);
 
     const metrics = workout.activity
       ? `
       <div class="activity-metrics">
-        <div class="metric"><strong>${escapeHtml(workout.activity.duration || "—")}</strong><span>Duration</span></div>
-        <div class="metric"><strong>${workout.activity.distanceKm != null ? `${workout.activity.distanceKm} km` : "—"}</strong><span>Distance</span></div>
-        <div class="metric"><strong>${escapeHtml(pace || "—")}</strong><span>Avg pace</span></div>
-        <div class="metric"><strong>${workout.activity.elevationM != null ? `${workout.activity.elevationM} m` : "—"}</strong><span>Elevation</span></div>
+        <div class="metric"><strong>${escapeHtml(fields.score || "—")}</strong><span>Duration</span></div>
+        <div class="metric"><strong>${fields.strengthLoad ? `${escapeHtml(fields.strengthLoad)} km` : "—"}</strong><span>Distance</span></div>
+        <div class="metric"><strong>${escapeHtml(fields.avgPace || "—")}</strong><span>Avg pace</span></div>
+        <div class="metric"><strong>${fields.elevation ? `${escapeHtml(fields.elevation)} m` : "—"}</strong><span>Elevation</span></div>
       </div>`
       : "";
 
-    const defaultScore = entry.score || workout.activity?.duration || "";
     const openPill = completed
       ? ""
       : `<button type="button" class="status-pill is-open" id="detail-open-menu" aria-haspopup="true">Open</button>`;
 
+    const activityFields = workout.activity || isActivityType(workout.type);
+    const activityDuration = workout.activity?.duration || "";
+    const activityDistance =
+      workout.activity?.distanceKm != null ? String(workout.activity.distanceKm) : "";
+    const activityElevation =
+      workout.activity?.elevationM != null ? String(workout.activity.elevationM) : "";
+    const sessionContent = workout.rawText || sectionsToEditText(workout.sections);
+
     els.detail.innerHTML = `
-      <div class="detail-header">
-        <div>
+      <form class="session-log-form" id="session-log-form">
+        <div class="detail-header">
           <div class="meta-row">
-            <span class="badge ${badgeClass(workout.type)}">${workout.type}</span>
+            <span class="badge ${badgeClass(workout.type)}" id="session-type-badge">${workout.type}</span>
             ${openPill}
           </div>
-          <h1>${escapeHtml(workout.title)}</h1>
-          <p class="detail-sub">${escapeHtml(subBits.join(" · "))}</p>
         </div>
-      </div>
 
-      ${metrics}
+        <div class="session-form">
+          <h2>Session</h2>
+          <div class="form-grid">
+            <div class="field">
+              <label for="session-date">Date</label>
+              <input type="date" id="session-date" name="sessionDate" value="${escapeAttr(workout.date)}" />
+            </div>
+            <div class="field">
+              <label for="session-type">Type</label>
+              <select id="session-type" name="sessionType">
+                ${WORKOUT_TYPES.map(
+                  (t) =>
+                    `<option value="${t}" ${workout.type === t ? "selected" : ""}>${t}</option>`
+                ).join("")}
+              </select>
+            </div>
+            <div class="field full">
+              <label for="session-title">Title</label>
+              <input id="session-title" name="sessionTitle" value="${escapeAttr(workout.title)}" />
+            </div>
+            <div class="field">
+              <label for="session-class-time">Class time</label>
+              <input id="session-class-time" name="sessionClassTime" value="${escapeAttr(workout.classTime || "")}" placeholder="17:40–18:35" />
+            </div>
+            <div class="field">
+              <label for="session-box">Box / location</label>
+              <input id="session-box" name="sessionBox" value="${escapeAttr(workout.box || "")}" placeholder="Box 1" />
+            </div>
+          </div>
+          <div class="form-grid session-activity-grid" id="session-activity-fields" ${activityFields ? "" : "hidden"}>
+            <div class="field">
+              <label for="session-activity-duration">Duration</label>
+              <input id="session-activity-duration" value="${escapeAttr(activityDuration)}" placeholder="29:36" />
+            </div>
+            <div class="field">
+              <label for="session-activity-distance">Distance (km)</label>
+              <input id="session-activity-distance" value="${escapeAttr(activityDistance)}" placeholder="5.02" inputmode="decimal" />
+            </div>
+            <div class="field">
+              <label for="session-activity-elevation">Elevation (m)</label>
+              <input id="session-activity-elevation" value="${escapeAttr(activityElevation)}" placeholder="11" inputmode="numeric" />
+            </div>
+          </div>
+          <div class="field full">
+            <label for="session-content">Workout content</label>
+            <textarea id="session-content" class="full-text session-content" placeholder="STRENGTH&#10;Every 2:30 x 3 Sets&#10;...">${escapeHtml(sessionContent)}</textarea>
+          </div>
+        </div>
 
-      <div class="sections">
-        ${workout.sections
-          .map(
-            (s) => `
-          <article class="section-card">
-            <h3>${escapeHtml(s.name)}</h3>
-            ${s.format ? `<p class="section-format">${escapeHtml(s.format)}</p>` : ""}
-            <pre class="section-content">${escapeHtml(s.content || "")}</pre>
-          </article>`
-          )
-          .join("")}
-      </div>
+        ${metrics}
 
-      <form class="log-form" id="log-form">
-        <h2>Your log</h2>
+        <div class="log-form">
+          <h2>Your log</h2>
+        <div class="check-row log-status-row">
+          <input type="checkbox" id="log-completed" name="completed" ${completed ? "checked" : ""} />
+          <label for="log-completed">Session complete</label>
+        </div>
         <div class="form-grid">
           <div class="field">
             <label for="score">${escapeHtml(workout.activity ? "Duration" : meta.scoreLabel)}</label>
-            <input id="score" name="score" value="${escapeAttr(defaultScore)}" placeholder="${meta.scoreType === "time" || workout.activity ? "12:34" : ""}" />
+            <input id="score" name="score" value="${escapeAttr(fields.score)}" placeholder="${meta.scoreType === "time" || workout.activity ? "12:34" : ""}" />
           </div>
           <div class="field">
             <label for="strengthLoad">${workout.activity ? "Distance (km)" : "Strength load / 1RM"}</label>
-            <input id="strengthLoad" name="strengthLoad" value="${escapeAttr(entry.strengthLoad || (workout.activity && workout.activity.distanceKm != null ? String(workout.activity.distanceKm) : ""))}" placeholder="${workout.activity ? "5.02" : "e.g. 120kg / 4x5 @80%"}" />
+            <input id="strengthLoad" name="strengthLoad" value="${escapeAttr(fields.strengthLoad)}" placeholder="${workout.activity ? "5.02" : "e.g. 120kg / 4x5 @80%"}" />
           </div>
           ${
             workout.activity
               ? `<div class="field">
             <label for="avg-pace">Avg pace</label>
-            <input id="avg-pace" name="avgPace" value="${escapeAttr(entry.avgPace || pace || "")}" readonly />
+            <input id="avg-pace" name="avgPace" value="${escapeAttr(fields.avgPace)}" placeholder="5:54 /km" />
+            <span class="field-hint">Auto-calculated from duration and distance; you can edit.</span>
           </div>
           <div class="field">
             <label for="elevation">Elevation (m)</label>
-            <input id="elevation" name="elevation" value="${escapeAttr(entry.elevation != null ? String(entry.elevation) : workout.activity.elevationM != null ? String(workout.activity.elevationM) : "")}" placeholder="11" />
+            <input id="elevation" name="elevation" value="${escapeAttr(fields.elevation)}" placeholder="11" />
           </div>`
               : ""
           }
           <div class="field">
             <label for="rpe">Session RPE</label>
-            <input id="rpe" name="rpe" value="${escapeAttr(entry.rpe || "")}" placeholder="1–10" />
+            <input id="rpe" name="rpe" value="${escapeAttr(entry.rpe || "")}" placeholder="1–10" inputmode="decimal" />
           </div>
           <div class="field full">
             <label for="notes">Notes</label>
@@ -2565,10 +2730,11 @@
           </div>
         </div>
         <div class="actions">
-          <button class="btn btn-primary" type="submit">Save log</button>
-          <button class="btn btn-ghost" type="button" id="clear-log">Clear</button>
+          <button class="btn btn-primary" type="submit">Save session</button>
+          <button class="btn btn-ghost" type="button" id="clear-log">Clear log</button>
           <button class="btn btn-danger" type="button" id="delete-workout">Delete workout</button>
           <span class="save-flash" id="save-flash">Saved</span>
+        </div>
         </div>
       </form>
     `;
@@ -2582,13 +2748,30 @@
       });
     }
 
-    const form = document.getElementById("log-form");
+    const form = document.getElementById("session-log-form");
+    const sessionTypeEl = document.getElementById("session-type");
+    const sessionActivityFields = document.getElementById("session-activity-fields");
+    const sessionTypeBadge = document.getElementById("session-type-badge");
+
+    function syncActivityFieldsVisibility() {
+      const isActivity = isActivityType(sessionTypeEl.value);
+      sessionActivityFields.hidden = !isActivity;
+      if (sessionTypeBadge) {
+        sessionTypeBadge.textContent = sessionTypeEl.value;
+        sessionTypeBadge.className = `badge ${badgeClass(sessionTypeEl.value)}`;
+      }
+    }
+
+    sessionTypeEl.addEventListener("change", syncActivityFieldsVisibility);
+
     const scoreInput = document.getElementById("score");
     const distanceInput = document.getElementById("strengthLoad");
     const paceInput = document.getElementById("avg-pace");
+    let paceEdited = Boolean(entry.avgPace);
 
     function refreshLogPace() {
-      if (!paceInput || !workout.activity) return;
+      if (!paceInput || paceEdited) return;
+      if (!workout.activity && !isActivityType(sessionTypeEl.value)) return;
       const duration = scoreInput.value.trim();
       const distanceRaw = distanceInput.value.trim().replace(/,/g, ".");
       const distanceMatch = distanceRaw.match(/(\d+(?:\.\d+)?)/);
@@ -2597,27 +2780,68 @@
       paceInput.value = nextPace || "";
     }
 
-    if (workout.activity) {
+    if (workout.activity || isActivityType(sessionTypeEl?.value || workout.type)) {
       scoreInput.addEventListener("input", refreshLogPace);
       distanceInput.addEventListener("input", refreshLogPace);
+      paceInput?.addEventListener("input", () => {
+        paceEdited = true;
+      });
       refreshLogPace();
     }
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+
+      const sessionType = sessionTypeEl.value;
+      const sessionDate = document.getElementById("session-date").value;
+      const sessionTitle = document.getElementById("session-title").value.trim();
+      const sessionClassTime = document.getElementById("session-class-time").value.trim();
+      const sessionBox = document.getElementById("session-box").value.trim();
+      const sessionContentText = document.getElementById("session-content").value.trim();
+      const sections = sessionContentText ? parseSections(sessionContentText) : [];
+
+      const sessionPatch = {
+        date: sessionDate || workout.date,
+        type: sessionType,
+        title:
+          sessionTitle ||
+          titleFromText(sessionContentText || sessionTitle, sessionType, sections),
+        classTime: sessionClassTime || undefined,
+        box: sessionBox || undefined,
+        sections,
+      };
+
+      if (isActivityType(sessionType)) {
+        const duration = document.getElementById("session-activity-duration").value.trim();
+        const distanceRaw = document
+          .getElementById("session-activity-distance")
+          .value.trim()
+          .replace(/,/g, ".");
+        const elevationRaw = document.getElementById("session-activity-elevation").value.trim();
+        const distanceKm = distanceRaw ? Number(distanceRaw) : undefined;
+        sessionPatch.activity = {
+          duration,
+          distanceKm: Number.isFinite(distanceKm) ? distanceKm : undefined,
+          elevationM: elevationRaw ? Number(elevationRaw) : 0,
+        };
+      } else {
+        sessionPatch.activity = null;
+      }
+
+      persistWorkoutUpdate(workout.id, sessionPatch);
+
+      const completedChecked = document.getElementById("log-completed").checked;
       const payload = {
-        completed: isCompleted(workout),
-        completedManual: getLog(workout.id)?.completedManual || false,
+        completed: completedChecked,
+        completedManual: true,
         score: document.getElementById("score").value.trim(),
         strengthLoad: document.getElementById("strengthLoad").value.trim(),
         rpe: document.getElementById("rpe").value.trim(),
         notes: document.getElementById("notes").value.trim(),
         updatedAt: new Date().toISOString(),
       };
-      if (typeof getLog(workout.id)?.completed === "boolean") {
-        payload.completed = getLog(workout.id).completed;
-      }
-      if (workout.activity) {
+      const updatedWorkout = allWorkouts().find((w) => w.id === workout.id);
+      if (updatedWorkout?.activity) {
         payload.avgPace = document.getElementById("avg-pace")?.value.trim() || "";
         payload.elevation = document.getElementById("elevation")?.value.trim() || "";
       }
@@ -2628,26 +2852,22 @@
       saveLogs();
       const newPrs = evaluatePrsAfterLog();
       renderStats();
+      renderWorkload();
+      renderCalendar();
       renderList();
       const flash = document.getElementById("save-flash");
       flash.classList.add("is-on");
       setTimeout(() => flash.classList.remove("is-on"), 1200);
       renderDetail();
+      syncDetailPanel();
       if (newPrs.length) showNewPrToasts(newPrs);
+      showBanner("Session saved.");
     });
 
     document.getElementById("clear-log").addEventListener("click", () => {
       const prev = getLog(workout.id) || {};
       if (prev.deleted) return;
-      if (typeof prev.completed === "boolean") {
-        state.logs[workout.id] = {
-          completed: prev.completed,
-          completedManual: prev.completedManual,
-          updatedAt: new Date().toISOString(),
-        };
-      } else {
-        delete state.logs[workout.id];
-      }
+      delete state.logs[workout.id];
       saveLogs();
       renderPrs();
       renderStats();
@@ -2710,16 +2930,12 @@
     const parts = [];
 
     if (workout.type === "RUN" || workout.type === "WALK") {
+      const fields = getEffectiveLogFields(workout, entry);
       parts.push(workout.title || workout.type);
-      if (workout.activity?.duration) parts.push(`Duration: ${workout.activity.duration}`);
-      if (workout.activity?.distanceKm != null) {
-        parts.push(`Distance: ${workout.activity.distanceKm} km`);
-      }
-      const pace = paceText(workout.activity) || entry.avgPace;
-      if (pace) parts.push(`Avg pace: ${pace}`);
-      if (workout.activity?.elevationM != null) {
-        parts.push(`Elevation: ${workout.activity.elevationM} m`);
-      }
+      if (fields.score) parts.push(`Duration: ${fields.score}`);
+      if (fields.strengthLoad) parts.push(`Distance: ${fields.strengthLoad} km`);
+      if (fields.avgPace) parts.push(`Avg pace: ${fields.avgPace}`);
+      if (fields.elevation) parts.push(`Elevation: ${fields.elevation} m`);
     } else {
       if (workout.title) parts.push(workout.title);
       for (const section of workout.sections || []) {
@@ -2816,6 +3032,20 @@
       ? `Last access: ${formatAccessTime(previous)}`
       : "First visit — welcome!";
     localStorage.setItem(LAST_ACCESS_KEY, new Date().toISOString());
+  }
+
+  async function initCodeUpdate() {
+    if (!els.lastCodeUpdate) return;
+    try {
+      const res = await fetch("data/version.json", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data?.updatedAt) return;
+      const when = formatAccessTime(data.updatedAt);
+      els.lastCodeUpdate.textContent = `Last code update: ${when}`;
+    } catch {
+      // ignore — optional metadata for local/offline use
+    }
   }
 
   function startAddWorkout() {
@@ -3011,6 +3241,7 @@
   ensurePastDueComplete();
   ensureSeedPrs();
   initLastAccess();
+  initCodeUpdate();
   state.panelsOpen = { ...DEFAULT_PANELS_OPEN };
   syncFormulaVisibility();
   syncAllPanels();

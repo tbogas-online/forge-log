@@ -1907,6 +1907,37 @@ body.add-workout-open {
   line-height: 1.55;
 }
 
+.session-log-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.session-form {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.session-form h2 {
+  margin: 0 0 0.85rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.session-content {
+  min-height: 140px;
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+}
+
+.session-activity-grid {
+  margin-top: 0.15rem;
+}
+
 .log-form {
   margin-top: 1.25rem;
   border: 1px solid var(--line);
@@ -1921,6 +1952,18 @@ body.add-workout-open {
   letter-spacing: 0.06em;
   font-size: 1.5rem;
   font-weight: 400;
+}
+
+.log-status-row {
+  margin: 0 0 0.85rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.field-hint {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
 }
 
 .form-grid {
