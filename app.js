@@ -1,6 +1,7 @@
 (() => {
   const STORAGE_KEY = "forge-log-entries-v1";
   const CUSTOM_KEY = "forge-log-custom-workouts-v1";
+  const OVERRIDES_KEY = "forge-log-workout-overrides-v1";
   const MANUAL_PR_KEY = "forge-log-manual-prs-v1";
   const COACH_FEEDBACK_KEY = "forge-log-coach-feedback-v1";
   const PANELS_UI_KEY = "forge-log-panels-ui-v2";
@@ -44,6 +45,7 @@
     customTo: "",
     logs: loadLogs(),
     custom: loadCustom(),
+    overrides: loadOverrides(),
     manualPrs: loadManualPrs(),
     coachFeedback: loadCoachFeedback(),
     detailExpanded: false,
@@ -331,10 +333,88 @@
     localStorage.setItem(CUSTOM_KEY, JSON.stringify(state.custom));
   }
 
+  function loadOverrides() {
+    try {
+      const data = JSON.parse(localStorage.getItem(OVERRIDES_KEY) || "{}");
+      return data && typeof data === "object" ? data : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function saveOverrides() {
+    localStorage.setItem(OVERRIDES_KEY, JSON.stringify(state.overrides));
+  }
+
+  function isActivityType(type) {
+    return type === "RUN" || type === "WALK";
+  }
+
+  function mergeWorkout(workout) {
+    const override = state.overrides[workout.id];
+    if (!override) return workout;
+    const merged = { ...workout, ...override };
+    if (override.activity === null) {
+      delete merged.activity;
+    } else if (override.activity) {
+      merged.activity = { ...(workout.activity || {}), ...override.activity };
+    }
+    if (override.sections) merged.sections = override.sections;
+    return merged;
+  }
+
+  function sectionsToEditText(sections) {
+    return (sections || [])
+      .map((section) => {
+        const lines = [section.name];
+        if (section.format) lines.push(section.format);
+        if (section.content) lines.push(section.content);
+        return lines.join("\n");
+      })
+      .join("\n\n");
+  }
+
+  function persistWorkoutUpdate(id, patch) {
+    const customIdx = state.custom.findIndex((w) => w.id === id);
+    const base =
+      customIdx >= 0
+        ? state.custom[customIdx]
+        : (window.WORKOUTS || []).find((w) => w.id === id);
+    if (!base) return false;
+
+    const current = mergeWorkout(base);
+    const next = { ...current, ...patch };
+    if (patch.activity === null) {
+      delete next.activity;
+    } else if (patch.activity) {
+      next.activity = { ...(current.activity || {}), ...patch.activity };
+    }
+    if (patch.sections) next.sections = patch.sections;
+
+    if (customIdx >= 0) {
+      state.custom[customIdx] = { ...next, custom: true };
+      saveCustom();
+      return true;
+    }
+
+    state.overrides[id] = {
+      ...state.overrides[id],
+      date: next.date,
+      type: next.type,
+      title: next.title,
+      classTime: next.classTime,
+      box: next.box,
+      sections: next.sections,
+      activity: next.activity ? next.activity : null,
+    };
+    saveOverrides();
+    return true;
+  }
+
   function allWorkouts() {
-    return [...(window.WORKOUTS || []), ...state.custom].filter(
-      (w) => !state.logs[w.id]?.deleted
-    );
+    return [...(window.WORKOUTS || []), ...state.custom]
+      .map(mergeWorkout)
+      .filter((w) => !state.logs[w.id]?.deleted);
   }
 
   function formatDate(iso) {
@@ -1026,6 +1106,8 @@
         completedManual: true,
         updatedAt: new Date().toISOString(),
       };
+      delete state.overrides[id];
+      saveOverrides();
       saveLogs();
       return true;
     }
@@ -2526,12 +2608,6 @@
     const pastDue = isPastDue(workout);
     const meta = primaryScoreMeta(workout);
     const fields = getEffectiveLogFields(workout, entry);
-    const subBits = [formatDate(workout.date)];
-    if (workout.classTime) subBits.push(workout.classTime);
-    if (workout.box) subBits.push(workout.box);
-    if (meta.timeCap) subBits.push(`Cap ${meta.timeCap}`);
-    if (fields.avgPace) subBits.push(fields.avgPace);
-    if (pastDue) subBits.push("Past due");
 
     const metrics = workout.activity
       ? `
@@ -2547,35 +2623,76 @@
       ? ""
       : `<button type="button" class="status-pill is-open" id="detail-open-menu" aria-haspopup="true">Open</button>`;
 
+    const activityFields = workout.activity || isActivityType(workout.type);
+    const activityDuration = workout.activity?.duration || "";
+    const activityDistance =
+      workout.activity?.distanceKm != null ? String(workout.activity.distanceKm) : "";
+    const activityElevation =
+      workout.activity?.elevationM != null ? String(workout.activity.elevationM) : "";
+    const sessionContent = workout.rawText || sectionsToEditText(workout.sections);
+
     els.detail.innerHTML = `
-      <div class="detail-header">
-        <div>
+      <form class="session-log-form" id="session-log-form">
+        <div class="detail-header">
           <div class="meta-row">
-            <span class="badge ${badgeClass(workout.type)}">${workout.type}</span>
+            <span class="badge ${badgeClass(workout.type)}" id="session-type-badge">${workout.type}</span>
             ${openPill}
           </div>
-          <h1>${escapeHtml(workout.title)}</h1>
-          <p class="detail-sub">${escapeHtml(subBits.join(" · "))}</p>
         </div>
-      </div>
 
-      ${metrics}
+        <div class="session-form">
+          <h2>Session</h2>
+          <div class="form-grid">
+            <div class="field">
+              <label for="session-date">Date</label>
+              <input type="date" id="session-date" name="sessionDate" value="${escapeAttr(workout.date)}" />
+            </div>
+            <div class="field">
+              <label for="session-type">Type</label>
+              <select id="session-type" name="sessionType">
+                ${WORKOUT_TYPES.map(
+                  (t) =>
+                    `<option value="${t}" ${workout.type === t ? "selected" : ""}>${t}</option>`
+                ).join("")}
+              </select>
+            </div>
+            <div class="field full">
+              <label for="session-title">Title</label>
+              <input id="session-title" name="sessionTitle" value="${escapeAttr(workout.title)}" />
+            </div>
+            <div class="field">
+              <label for="session-class-time">Class time</label>
+              <input id="session-class-time" name="sessionClassTime" value="${escapeAttr(workout.classTime || "")}" placeholder="17:40–18:35" />
+            </div>
+            <div class="field">
+              <label for="session-box">Box / location</label>
+              <input id="session-box" name="sessionBox" value="${escapeAttr(workout.box || "")}" placeholder="Box 1" />
+            </div>
+          </div>
+          <div class="form-grid session-activity-grid" id="session-activity-fields" ${activityFields ? "" : "hidden"}>
+            <div class="field">
+              <label for="session-activity-duration">Duration</label>
+              <input id="session-activity-duration" value="${escapeAttr(activityDuration)}" placeholder="29:36" />
+            </div>
+            <div class="field">
+              <label for="session-activity-distance">Distance (km)</label>
+              <input id="session-activity-distance" value="${escapeAttr(activityDistance)}" placeholder="5.02" inputmode="decimal" />
+            </div>
+            <div class="field">
+              <label for="session-activity-elevation">Elevation (m)</label>
+              <input id="session-activity-elevation" value="${escapeAttr(activityElevation)}" placeholder="11" inputmode="numeric" />
+            </div>
+          </div>
+          <div class="field full">
+            <label for="session-content">Workout content</label>
+            <textarea id="session-content" class="full-text session-content" placeholder="STRENGTH&#10;Every 2:30 x 3 Sets&#10;...">${escapeHtml(sessionContent)}</textarea>
+          </div>
+        </div>
 
-      <div class="sections">
-        ${workout.sections
-          .map(
-            (s) => `
-          <article class="section-card">
-            <h3>${escapeHtml(s.name)}</h3>
-            ${s.format ? `<p class="section-format">${escapeHtml(s.format)}</p>` : ""}
-            <pre class="section-content">${escapeHtml(s.content || "")}</pre>
-          </article>`
-          )
-          .join("")}
-      </div>
+        ${metrics}
 
-      <form class="log-form" id="log-form">
-        <h2>Your log</h2>
+        <div class="log-form">
+          <h2>Your log</h2>
         <div class="check-row log-status-row">
           <input type="checkbox" id="log-completed" name="completed" ${completed ? "checked" : ""} />
           <label for="log-completed">Session complete</label>
@@ -2612,10 +2729,11 @@
           </div>
         </div>
         <div class="actions">
-          <button class="btn btn-primary" type="submit">Save log</button>
-          <button class="btn btn-ghost" type="button" id="clear-log">Clear</button>
+          <button class="btn btn-primary" type="submit">Save session</button>
+          <button class="btn btn-ghost" type="button" id="clear-log">Clear log</button>
           <button class="btn btn-danger" type="button" id="delete-workout">Delete workout</button>
           <span class="save-flash" id="save-flash">Saved</span>
+        </div>
         </div>
       </form>
     `;
@@ -2629,14 +2747,30 @@
       });
     }
 
-    const form = document.getElementById("log-form");
+    const form = document.getElementById("session-log-form");
+    const sessionTypeEl = document.getElementById("session-type");
+    const sessionActivityFields = document.getElementById("session-activity-fields");
+    const sessionTypeBadge = document.getElementById("session-type-badge");
+
+    function syncActivityFieldsVisibility() {
+      const isActivity = isActivityType(sessionTypeEl.value);
+      sessionActivityFields.hidden = !isActivity;
+      if (sessionTypeBadge) {
+        sessionTypeBadge.textContent = sessionTypeEl.value;
+        sessionTypeBadge.className = `badge ${badgeClass(sessionTypeEl.value)}`;
+      }
+    }
+
+    sessionTypeEl.addEventListener("change", syncActivityFieldsVisibility);
+
     const scoreInput = document.getElementById("score");
     const distanceInput = document.getElementById("strengthLoad");
     const paceInput = document.getElementById("avg-pace");
     let paceEdited = Boolean(entry.avgPace);
 
     function refreshLogPace() {
-      if (!paceInput || !workout.activity || paceEdited) return;
+      if (!paceInput || paceEdited) return;
+      if (!workout.activity && !isActivityType(sessionTypeEl.value)) return;
       const duration = scoreInput.value.trim();
       const distanceRaw = distanceInput.value.trim().replace(/,/g, ".");
       const distanceMatch = distanceRaw.match(/(\d+(?:\.\d+)?)/);
@@ -2645,7 +2779,7 @@
       paceInput.value = nextPace || "";
     }
 
-    if (workout.activity) {
+    if (workout.activity || isActivityType(sessionTypeEl?.value || workout.type)) {
       scoreInput.addEventListener("input", refreshLogPace);
       distanceInput.addEventListener("input", refreshLogPace);
       paceInput?.addEventListener("input", () => {
@@ -2656,6 +2790,45 @@
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+
+      const sessionType = sessionTypeEl.value;
+      const sessionDate = document.getElementById("session-date").value;
+      const sessionTitle = document.getElementById("session-title").value.trim();
+      const sessionClassTime = document.getElementById("session-class-time").value.trim();
+      const sessionBox = document.getElementById("session-box").value.trim();
+      const sessionContentText = document.getElementById("session-content").value.trim();
+      const sections = sessionContentText ? parseSections(sessionContentText) : [];
+
+      const sessionPatch = {
+        date: sessionDate || workout.date,
+        type: sessionType,
+        title:
+          sessionTitle ||
+          titleFromText(sessionContentText || sessionTitle, sessionType, sections),
+        classTime: sessionClassTime || undefined,
+        box: sessionBox || undefined,
+        sections,
+      };
+
+      if (isActivityType(sessionType)) {
+        const duration = document.getElementById("session-activity-duration").value.trim();
+        const distanceRaw = document
+          .getElementById("session-activity-distance")
+          .value.trim()
+          .replace(/,/g, ".");
+        const elevationRaw = document.getElementById("session-activity-elevation").value.trim();
+        const distanceKm = distanceRaw ? Number(distanceRaw) : undefined;
+        sessionPatch.activity = {
+          duration,
+          distanceKm: Number.isFinite(distanceKm) ? distanceKm : undefined,
+          elevationM: elevationRaw ? Number(elevationRaw) : 0,
+        };
+      } else {
+        sessionPatch.activity = null;
+      }
+
+      persistWorkoutUpdate(workout.id, sessionPatch);
+
       const completedChecked = document.getElementById("log-completed").checked;
       const payload = {
         completed: completedChecked,
@@ -2666,7 +2839,8 @@
         notes: document.getElementById("notes").value.trim(),
         updatedAt: new Date().toISOString(),
       };
-      if (workout.activity) {
+      const updatedWorkout = allWorkouts().find((w) => w.id === workout.id);
+      if (updatedWorkout?.activity) {
         payload.avgPace = document.getElementById("avg-pace")?.value.trim() || "";
         payload.elevation = document.getElementById("elevation")?.value.trim() || "";
       }
@@ -2677,12 +2851,16 @@
       saveLogs();
       const newPrs = evaluatePrsAfterLog();
       renderStats();
+      renderWorkload();
+      renderCalendar();
       renderList();
       const flash = document.getElementById("save-flash");
       flash.classList.add("is-on");
       setTimeout(() => flash.classList.remove("is-on"), 1200);
       renderDetail();
+      syncDetailPanel();
       if (newPrs.length) showNewPrToasts(newPrs);
+      showBanner("Session saved.");
     });
 
     document.getElementById("clear-log").addEventListener("click", () => {

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 - Full session log editing: complete/open toggle, editable avg pace, and all run metrics reflect saved log values
+- Editable session fields: date, type, title, class time, box, workout content, and run/walk activity details (saved to local overrides for seeded sessions)
 
 ### Changed
 - Clear log resets all log fields (including completion status)
