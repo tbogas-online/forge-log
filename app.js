@@ -68,6 +68,7 @@
     addBtn: document.getElementById("add-workout-btn"),
     addFooterBtn: document.getElementById("add-workout-footer-btn"),
     lastAccess: document.getElementById("last-access"),
+    lastCodeUpdate: document.getElementById("last-code-update"),
     addWorkoutModal: document.getElementById("add-workout-modal"),
     addWorkoutHost: document.getElementById("add-workout-host"),
     addWorkoutClose: document.getElementById("add-workout-close"),
@@ -3033,6 +3034,20 @@
     localStorage.setItem(LAST_ACCESS_KEY, new Date().toISOString());
   }
 
+  async function initCodeUpdate() {
+    if (!els.lastCodeUpdate) return;
+    try {
+      const res = await fetch("data/version.json", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data?.updatedAt) return;
+      const when = formatAccessTime(data.updatedAt);
+      els.lastCodeUpdate.textContent = `Last code update: ${when}`;
+    } catch {
+      // ignore — optional metadata for local/offline use
+    }
+  }
+
   function startAddWorkout() {
     renderAddForm();
   }
@@ -3226,6 +3241,7 @@
   ensurePastDueComplete();
   ensureSeedPrs();
   initLastAccess();
+  initCodeUpdate();
   state.panelsOpen = { ...DEFAULT_PANELS_OPEN };
   syncFormulaVisibility();
   syncAllPanels();

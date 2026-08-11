@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- Footer shows last code update date/time from `data/version.json` (refreshed on each GitHub Pages deploy)
 - Full session log editing: complete/open toggle, editable avg pace, and all run metrics reflect saved log values
 - Editable session fields: date, type, title, class time, box, workout content, and run/walk activity details (saved to local overrides for seeded sessions)
 
@@ -21,7 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Training calendar with monthly donut charts per day
 - AI Coach panel with training recommendations
 - Collapsible panels for all major sections
-- Footer **Add workout** button and last-access timestamp (stored in `localStorage`)
+- Footer **Add workout** button, last-access timestamp, and last code update from `data/version.json`
 - Mobile layout: safe-area padding, horizontal scroll for filters/stats, larger touch targets, 16px inputs
 - Add-workout modal sheet (bottom overlay) for reliable use on phone and web
 - GitHub Actions workflow to deploy static site to GitHub Pages (`.github/workflows/deploy-pages.yml`)
