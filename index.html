@@ -141,14 +141,6 @@
             </label>
           </div>
           <ul class="workout-list" id="workout-list"></ul>
-          <div class="list-actions">
-            <button class="btn btn-ghost btn-small" type="button" id="export-csv-btn">
-              Export CSV
-            </button>
-            <button class="btn btn-primary btn-small" type="button" id="add-workout-btn">
-              Add workout
-            </button>
-          </div>
           </div>
         </section>
 
@@ -189,9 +181,14 @@
       </section>
 
       <footer class="app-footer">
-        <button class="btn btn-primary" type="button" id="add-workout-footer-btn">
-          Add workout
-        </button>
+        <div class="footer-actions">
+          <button class="btn btn-primary" type="button" id="add-workout-footer-btn">
+            Add workout
+          </button>
+          <button class="btn btn-ghost" type="button" id="export-csv-btn">
+            Export CSV
+          </button>
+        </div>
         <p class="last-access" id="last-code-update" aria-live="polite"></p>
         <p class="last-access" id="last-access" aria-live="polite"></p>
       </footer>
