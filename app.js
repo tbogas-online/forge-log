@@ -1124,15 +1124,17 @@
     if (workout.custom) {
       state.custom = state.custom.filter((w) => w.id !== id);
       state.logs[id] = deletedLog;
-      saveCustom();
-      saveLogs();
+      saveCustom({ skipCloudPush: true });
+      saveLogs({ skipCloudPush: true });
+      syncCloudAfterLocalChange();
       return true;
     }
     // Seeded sessions can't be removed from data file; mark deleted in logs
     state.logs[id] = deletedLog;
     delete state.overrides[id];
-    saveOverrides();
-    saveLogs();
+    saveOverrides({ skipCloudPush: true });
+    saveLogs({ skipCloudPush: true });
+    syncCloudAfterLocalChange();
     return true;
   }
 
@@ -2295,7 +2297,7 @@
     textarea.addEventListener("input", refreshDetect);
     refreshDetect();
 
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       errorEl.textContent = "";
       const report = importWorkoutsFromText(textarea.value);
@@ -2307,15 +2309,26 @@
 
       if (report.accepted.length) {
         state.custom.push(...report.accepted);
-        saveCustom();
+        saveCustom({ skipCloudPush: true });
         state.selectedId = report.accepted[report.accepted.length - 1].id;
         renderStats();
         renderList();
+        const synced = await syncCloudAfterLocalChange();
+        renderSyncStatus();
+        if (!loadSyncSettings().token) {
+          showBanner(
+            `${report.accepted.length} added · add a GitHub token in Sync devices to share with other devices.`,
+            true
+          );
+        } else if (synced?.ok) {
+          showBanner(`${report.accepted.length} added and synced to cloud.`);
+        } else {
+          showBanner(`${report.accepted.length} added · cloud upload failed, try Upload now.`, true);
+        }
+      } else {
+        showBanner(`${report.accepted.length} added · ${report.failed.length} failed`);
       }
 
-      showBanner(
-        `${report.accepted.length} added · ${report.failed.length} failed`
-      );
       renderImportFeedback(report);
     });
 
@@ -3407,23 +3420,28 @@
     state.custom = state.custom.filter((w) => !state.logs[w.id]?.deleted);
   }
 
+  function cloudFingerprint(data) {
+    const payload = data || buildBackupPayload();
+    return JSON.stringify({
+      at: payload.exportedAt || "",
+      custom: (payload.custom || []).map((w) => w.id).sort(),
+      deleted: Object.entries(payload.logs || {})
+        .filter(([, entry]) => entry?.deleted)
+        .map(([id]) => id)
+        .sort(),
+    });
+  }
+
+  function rememberRemoteSnapshot(data, settings = loadSyncSettings()) {
+    settings.lastRemoteAt = data.exportedAt || "";
+    settings.lastFingerprint = cloudFingerprint(data);
+    saveSyncSettings(settings);
+  }
+
   function remoteHasNewSessions(data, settings = loadSyncSettings()) {
     if (!data) return false;
-    if ((data.exportedAt || "") !== (settings.lastRemoteAt || "")) return true;
-
-    const localCustomIds = new Set(state.custom.map((w) => w.id));
-    const remoteCustomIds = new Set((data.custom || []).map((w) => w?.id).filter(Boolean));
-
-    if ((data.custom || []).some((w) => w?.id && !localCustomIds.has(w.id))) return true;
-    if ([...localCustomIds].some((id) => !remoteCustomIds.has(id) && !state.logs[id]?.deleted)) {
-      return true;
-    }
-
-    for (const [id, entry] of Object.entries(data.logs || {})) {
-      if (entry?.deleted && !state.logs[id]?.deleted) return true;
-    }
-
-    return false;
+    if (!settings.lastFingerprint) return true;
+    return cloudFingerprint(data) !== settings.lastFingerprint;
   }
 
   async function fetchRemoteBackupData() {
@@ -3473,12 +3491,17 @@
   }
 
   let cloudPushTimer = null;
-  function scheduleCloudPush() {
+  function scheduleCloudPush({ immediate = false } = {}) {
     if (!loadSyncSettings().token) return;
     clearTimeout(cloudPushTimer);
     cloudPushTimer = setTimeout(() => {
       pushCloudSync({ silent: true });
-    }, 4000);
+    }, immediate ? 0 : 500);
+  }
+
+  async function syncCloudAfterLocalChange() {
+    if (!loadSyncSettings().token) return { ok: false, reason: "no-token" };
+    return pushCloudSync({ silent: true });
   }
 
   async function pullCloudSync({ silent = true, force = false } = {}) {
@@ -3487,7 +3510,6 @@
       const data = await fetchRemoteBackupData();
       if (!data) return { ok: false, reason: "missing" };
 
-      const remoteAt = data.exportedAt || "";
       const shouldImport = force || remoteHasNewSessions(data, settings);
 
       if (!shouldImport) {
@@ -3501,9 +3523,8 @@
       importBackup(data, { silent: true, skipCloudPush: true });
       const after = allWorkouts().length;
       const added = Math.max(0, after - before);
-      settings.lastRemoteAt = remoteAt;
       settings.lastPullAt = new Date().toISOString();
-      saveSyncSettings(settings);
+      rememberRemoteSnapshot(data, settings);
 
       if (!silent) {
         showBanner(
@@ -3582,8 +3603,7 @@
       }
 
       settings.lastPushAt = new Date().toISOString();
-      settings.lastRemoteAt = payload.exportedAt;
-      saveSyncSettings(settings);
+      rememberRemoteSnapshot(payload, settings);
       if (!silent) showBanner("Cloud backup uploaded.");
       return { ok: true };
     } catch (err) {
@@ -3603,12 +3623,13 @@
   async function initCloudSync() {
     await pullCloudSync({ silent: true });
     renderSyncStatus();
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") {
-        pullCloudSync({ silent: true });
-      }
-    });
-    window.setInterval(() => pullCloudSync({ silent: true }), 3 * 60 * 1000);
+    const pullIfVisible = () => {
+      if (document.visibilityState === "visible") pullCloudSync({ silent: true });
+    };
+    document.addEventListener("visibilitychange", pullIfVisible);
+    window.addEventListener("focus", pullIfVisible);
+    window.addEventListener("pageshow", pullIfVisible);
+    window.setInterval(pullIfVisible, 30 * 1000);
   }
 
   function openSyncDevicesModal() {
