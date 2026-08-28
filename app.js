@@ -151,9 +151,9 @@
     }
   }
 
-  function saveManualPrs() {
+  function saveManualPrs(opts) {
     localStorage.setItem(MANUAL_PR_KEY, JSON.stringify(state.manualPrs));
-    scheduleCloudPush();
+    if (!opts?.skipCloudPush) scheduleCloudPush();
   }
 
   function loadCoachFeedback() {
@@ -169,9 +169,9 @@
     }
   }
 
-  function saveCoachFeedback() {
+  function saveCoachFeedback(opts) {
     localStorage.setItem(COACH_FEEDBACK_KEY, JSON.stringify(state.coachFeedback));
-    scheduleCloudPush();
+    if (!opts?.skipCloudPush) scheduleCloudPush();
   }
 
   function getDefaultCalendarMonth(custom = []) {
@@ -305,9 +305,9 @@
     }
   }
 
-  function saveLogs() {
+  function saveLogs(opts) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.logs));
-    scheduleCloudPush();
+    if (!opts?.skipCloudPush) scheduleCloudPush();
   }
 
   function loadCustom() {
@@ -347,9 +347,9 @@
     }
   }
 
-  function saveCustom() {
+  function saveCustom(opts) {
     localStorage.setItem(CUSTOM_KEY, JSON.stringify(state.custom));
-    scheduleCloudPush();
+    if (!opts?.skipCloudPush) scheduleCloudPush();
   }
 
   function loadOverrides() {
@@ -361,9 +361,9 @@
     }
   }
 
-  function saveOverrides() {
+  function saveOverrides(opts) {
     localStorage.setItem(OVERRIDES_KEY, JSON.stringify(state.overrides));
-    scheduleCloudPush();
+    if (!opts?.skipCloudPush) scheduleCloudPush();
   }
 
   function isActivityType(type) {
@@ -3419,7 +3419,7 @@
     }, 4000);
   }
 
-  async function pullCloudSync({ silent = true } = {}) {
+  async function pullCloudSync({ silent = true, force = false } = {}) {
     try {
       const settings = loadSyncSettings();
       const { owner, repo, branch } = syncRepoParts(settings);
@@ -3431,7 +3431,13 @@
       if (!data || data.version !== 1) return { ok: false, reason: "invalid" };
 
       const remoteAt = data.exportedAt || "";
-      if (settings.lastRemoteAt === remoteAt) {
+      const remoteCustom = Array.isArray(data.custom) ? data.custom.length : 0;
+      const shouldImport =
+        force ||
+        settings.lastRemoteAt !== remoteAt ||
+        remoteCustom > localCustomCount();
+
+      if (!shouldImport) {
         settings.lastPullAt = new Date().toISOString();
         saveSyncSettings(settings);
         if (!silent) showBanner("Cloud sync is up to date.");
@@ -3439,7 +3445,7 @@
       }
 
       const before = allWorkouts().length;
-      importBackup(data, { silent: true });
+      importBackup(data, { silent: true, skipCloudPush: true });
       const after = allWorkouts().length;
       const added = Math.max(0, after - before);
       settings.lastRemoteAt = remoteAt;
@@ -3462,6 +3468,12 @@
     }
   }
 
+  async function mergeRemoteBeforePush() {
+    const remote = await fetchRemoteBackupData();
+    if (!remote) return;
+    importBackup(remote, { silent: true, skipCloudPush: true });
+  }
+
   async function pushCloudSync({ silent = false } = {}) {
     const settings = loadSyncSettings();
     if (!settings.token) {
@@ -3470,6 +3482,7 @@
     }
 
     try {
+      await mergeRemoteBeforePush();
       const { owner, repo, branch } = syncRepoParts(settings);
       const payload = buildBackupPayload();
       const body = JSON.stringify(payload, null, 2);
@@ -3611,12 +3624,12 @@
       const next = { ...loadSyncSettings(), token };
       saveSyncSettings(next);
       showBanner(token ? "GitHub token saved on this device." : "GitHub token removed.");
-      if (token) await pushCloudSync({ silent: false });
+      if (token) await pullCloudSync({ silent: false, force: true });
       openSyncDevicesModal();
     });
 
     document.getElementById("sync-pull-btn")?.addEventListener("click", async () => {
-      await pullCloudSync({ silent: false });
+      await pullCloudSync({ silent: false, force: true });
       openSyncDevicesModal();
     });
 
@@ -3670,10 +3683,11 @@
     state.manualPrs = [...byId.values()];
   }
 
-  function importBackup(data, { silent = false } = {}) {
+  function importBackup(data, { silent = false, skipCloudPush = false } = {}) {
     if (!data || typeof data !== "object" || data.version !== 1) {
       throw new Error("Invalid backup file.");
     }
+    const saveOpts = { skipCloudPush };
     if (data.logs && typeof data.logs === "object") {
       state.logs = { ...state.logs, ...data.logs };
     }
@@ -3691,11 +3705,11 @@
         },
       };
     }
-    saveLogs();
-    saveCustom();
-    saveOverrides();
-    saveManualPrs();
-    saveCoachFeedback();
+    saveLogs(saveOpts);
+    saveCustom(saveOpts);
+    saveOverrides(saveOpts);
+    saveManualPrs(saveOpts);
+    saveCoachFeedback(saveOpts);
     ensurePastDueComplete();
     ensureSeedPrs();
     renderPrs();
