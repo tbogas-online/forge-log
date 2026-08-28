@@ -511,6 +511,131 @@ window.WORKOUTS = [
     ],
   },
   {
+    id: "2026-08-12-wod",
+    date: "2026-08-12",
+    type: "WOD",
+    title: "Snatch",
+    sections: [
+      {
+        name: "STRENGTH",
+        format: "Snatch",
+        content: "For Time:\n30 Snatch @60/43kg",
+        scoreType: "time",
+      },
+    ],
+  },
+  {
+    id: "2026-08-13-wod",
+    date: "2026-08-13",
+    type: "WOD",
+    title: "Back Squat /200m Erg",
+    sections: [
+      {
+        name: "CONDITIONING",
+        format: "3 Rounds, For Time:",
+        content: "250/200m Erg\n16 Alt. DB Hang Clean\n12 Burpees Over DB\n20 Wallballs",
+        scoreType: "time",
+      },
+    ],
+  },
+  {
+    id: "2026-08-14-hybrid",
+    date: "2026-08-14",
+    type: "HYBRID",
+    title: "Run/Ski/Row/Bike",
+    sections: [
+      {
+        name: "WORKOUT",
+        format: "AMRAP · 40:00",
+        content:
+          "Round:\nRun 500m\nSki 500m\nRun 500m\nRow 500m\nRun 500m\nBike 1000m",
+        scoreType: "rounds",
+        scoreLabel: "Rounds + extra distance",
+      },
+    ],
+  },
+  {
+    id: "2026-08-26-wod",
+    date: "2026-08-26",
+    type: "WOD",
+    title: "WOD + Cleans",
+    sections: [
+      {
+        name: "STRENGTH",
+        format: "Every 3` x 3 Sets:",
+        content: "3 Cleans\nrest 30``\n2 Cleans\nrest 30``\n1 Clean",
+        scoreType: "weight",
+        scoreLabel: "Top set (kg)",
+      },
+      {
+        name: "CONDITIONING",
+        format: "AMRAP 12`",
+        content: "2-4-6-8-10-12...\n2DB Thruters\nShuttle Runs (7,5m+7,5m)",
+        scoreType: "rounds",
+      },
+    ],
+  },
+  {
+    id: "2026-08-27-wod",
+    date: "2026-08-27",
+    type: "WOD",
+    title: "WOD+ Weighted Strict Pull Ups",
+    sections: [
+      {
+        name: "STRENGTH",
+        format: "EMOM 6`",
+        content: "2-4 Weighted Strict Pull Ups",
+        scoreType: "weight",
+        scoreLabel: "Top set (kg)",
+      },
+      {
+        name: "CONDITIONING",
+        format: "8 Rounds, For Time:",
+        content: "16 Box Jump Overs\n4 Wall Walks",
+        scoreType: "time",
+      },
+    ],
+  },
+  {
+    id: "2026-08-27-run",
+    date: "2026-08-27",
+    type: "RUN",
+    title: "RUN 4km After WOD",
+    activity: {
+      distanceKm: 4,
+    },
+    sections: [
+      {
+        name: "RUN",
+        format: "After WOD",
+        content: "Distance: 4.00 km",
+        scoreType: "time",
+        scoreLabel: "Duration",
+      },
+    ],
+  },
+  {
+    id: "2026-08-28-wod",
+    date: "2026-08-28",
+    type: "WOD",
+    title: "WOD + Deadlifts + Snatch",
+    sections: [
+      {
+        name: "STRENGTH",
+        format: "Every 2` x 5 Sets:",
+        content: "5 Deadlifts\n@75-80% | RPE 8 | RIR 2",
+        scoreType: "weight",
+        scoreLabel: "Top set (kg)",
+      },
+      {
+        name: "CONDITIONING",
+        format: "Every 2` x 8 Sets:",
+        content: "200m Run\n5 Hang Power Snatch",
+        scoreType: "rounds",
+      },
+    ],
+  },
+  {
     id: "2026-03-22-walk",
     date: "2026-03-22",
     type: "WALK",
