@@ -1113,25 +1113,25 @@
   function deleteWorkoutById(id) {
     const workout = allWorkouts().find((w) => w.id === id);
     if (!workout) return false;
+    const prev = getLog(id) || {};
+    const deletedLog = {
+      ...prev,
+      deleted: true,
+      completed: true,
+      completedManual: true,
+      updatedAt: new Date().toISOString(),
+    };
     if (workout.custom) {
       state.custom = state.custom.filter((w) => w.id !== id);
+      state.logs[id] = deletedLog;
       saveCustom();
-    } else {
-      // Seeded sessions can't be removed from data file; mark deleted in logs
-      const prev = getLog(id) || {};
-      state.logs[id] = {
-        ...prev,
-        deleted: true,
-        completed: true,
-        completedManual: true,
-        updatedAt: new Date().toISOString(),
-      };
-      delete state.overrides[id];
-      saveOverrides();
       saveLogs();
       return true;
     }
-    delete state.logs[id];
+    // Seeded sessions can't be removed from data file; mark deleted in logs
+    state.logs[id] = deletedLog;
+    delete state.overrides[id];
+    saveOverrides();
     saveLogs();
     return true;
   }
@@ -3383,11 +3383,47 @@
     return state.custom.length;
   }
 
+  function mergeLogs(local, remote) {
+    const merged = { ...(local || {}) };
+    for (const [id, remoteEntry] of Object.entries(remote || {})) {
+      const localEntry = local?.[id];
+      if (!localEntry) {
+        merged[id] = remoteEntry;
+        continue;
+      }
+      if (localEntry.deleted || remoteEntry.deleted) {
+        const localAt = new Date(localEntry.updatedAt || 0).getTime();
+        const remoteAt = new Date(remoteEntry.updatedAt || 0).getTime();
+        const winner = remoteAt >= localAt ? remoteEntry : localEntry;
+        merged[id] = { ...winner, deleted: true };
+        continue;
+      }
+      merged[id] = { ...localEntry, ...remoteEntry };
+    }
+    return merged;
+  }
+
+  function pruneDeletedCustomWorkouts() {
+    state.custom = state.custom.filter((w) => !state.logs[w.id]?.deleted);
+  }
+
   function remoteHasNewSessions(data, settings = loadSyncSettings()) {
     if (!data) return false;
     if ((data.exportedAt || "") !== (settings.lastRemoteAt || "")) return true;
-    const localIds = new Set(state.custom.map((w) => w.id));
-    return (data.custom || []).some((w) => w?.id && !localIds.has(w.id));
+
+    const localCustomIds = new Set(state.custom.map((w) => w.id));
+    const remoteCustomIds = new Set((data.custom || []).map((w) => w?.id).filter(Boolean));
+
+    if ((data.custom || []).some((w) => w?.id && !localCustomIds.has(w.id))) return true;
+    if ([...localCustomIds].some((id) => !remoteCustomIds.has(id) && !state.logs[id]?.deleted)) {
+      return true;
+    }
+
+    for (const [id, entry] of Object.entries(data.logs || {})) {
+      if (entry?.deleted && !state.logs[id]?.deleted) return true;
+    }
+
+    return false;
   }
 
   async function fetchRemoteBackupData() {
@@ -3690,6 +3726,7 @@
       if (workout?.id) byId.set(workout.id, workout);
     }
     state.custom = [...byId.values()];
+    pruneDeletedCustomWorkouts();
   }
 
   function mergeManualPrs(items) {
@@ -3706,9 +3743,10 @@
     }
     const saveOpts = { skipCloudPush };
     if (data.logs && typeof data.logs === "object") {
-      state.logs = { ...state.logs, ...data.logs };
+      state.logs = mergeLogs(state.logs, data.logs);
     }
     if (Array.isArray(data.custom)) mergeCustomWorkouts(data.custom);
+    else pruneDeletedCustomWorkouts();
     if (data.overrides && typeof data.overrides === "object") {
       state.overrides = { ...state.overrides, ...data.overrides };
     }
