@@ -3383,9 +3383,35 @@
     return state.custom.length;
   }
 
+  function remoteHasNewSessions(data, settings = loadSyncSettings()) {
+    if (!data) return false;
+    if ((data.exportedAt || "") !== (settings.lastRemoteAt || "")) return true;
+    const localIds = new Set(state.custom.map((w) => w.id));
+    return (data.custom || []).some((w) => w?.id && !localIds.has(w.id));
+  }
+
   async function fetchRemoteBackupData() {
     const settings = loadSyncSettings();
     const { owner, repo, branch } = syncRepoParts(settings);
+    const headers = {
+      Accept: "application/vnd.github.raw+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    };
+    if (settings.token) headers.Authorization = `Bearer ${settings.token}`;
+
+    try {
+      const apiRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${SYNC_FILE_PATH}?ref=${encodeURIComponent(branch)}`,
+        { cache: "no-store", headers }
+      );
+      if (apiRes.ok) {
+        const data = await apiRes.json();
+        if (data && data.version === 1) return data;
+      }
+    } catch {
+      /* fall back to raw URL */
+    }
+
     const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${SYNC_FILE_PATH}?t=${Date.now()}`;
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) return null;
@@ -3422,20 +3448,11 @@
   async function pullCloudSync({ silent = true, force = false } = {}) {
     try {
       const settings = loadSyncSettings();
-      const { owner, repo, branch } = syncRepoParts(settings);
-      const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${SYNC_FILE_PATH}?t=${Date.now()}`;
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) return { ok: false, reason: "missing" };
-
-      const data = await res.json();
-      if (!data || data.version !== 1) return { ok: false, reason: "invalid" };
+      const data = await fetchRemoteBackupData();
+      if (!data) return { ok: false, reason: "missing" };
 
       const remoteAt = data.exportedAt || "";
-      const remoteCustom = Array.isArray(data.custom) ? data.custom.length : 0;
-      const shouldImport =
-        force ||
-        settings.lastRemoteAt !== remoteAt ||
-        remoteCustom > localCustomCount();
+      const shouldImport = force || remoteHasNewSessions(data, settings);
 
       if (!shouldImport) {
         settings.lastPullAt = new Date().toISOString();
