@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-08-28T11:26:26.100Z",
+  "exportedAt": "2026-08-28T11:26:54.381Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -132,21 +132,6 @@
       "completedAuto": true,
       "updatedAt": "2026-08-28T09:39:30.254Z"
     },
-    "2026-03-22-walk": {
-      "completed": true,
-      "completedAuto": true,
-      "updatedAt": "2026-08-28T09:39:30.254Z"
-    },
-    "2026-03-29-run": {
-      "completed": true,
-      "completedAuto": true,
-      "updatedAt": "2026-08-28T09:39:30.254Z"
-    },
-    "2026-08-09-run": {
-      "completed": true,
-      "completedAuto": true,
-      "updatedAt": "2026-08-28T09:39:30.254Z"
-    },
     "2026-08-12-wod": {
       "completed": true,
       "completedAuto": true,
@@ -176,9 +161,83 @@
       "completed": true,
       "completedAuto": true,
       "updatedAt": "2026-08-28T10:56:12.075Z"
+    },
+    "2026-03-22-walk": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-08-28T09:39:30.254Z"
+    },
+    "2026-03-29-run": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-08-28T09:39:30.254Z"
+    },
+    "2026-08-09-run": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-08-28T09:39:30.254Z"
+    },
+    "2026-08-28-wod": {
+      "completed": true,
+      "completedManual": true,
+      "updatedAt": "2026-08-28T10:54:45.514Z"
+    },
+    "2026-08-17-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-08-28T10:56:23.658Z"
+    },
+    "2026-08-18-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-08-28T10:56:23.658Z"
     }
   },
-  "custom": [],
+  "custom": [
+    {
+      "id": "2026-08-17-wod",
+      "date": "2026-08-17",
+      "type": "WOD",
+      "title": "HSPU",
+      "rawText": "17 de Agosto de 2026 - WOD\n06:25 - 07:20\nSKILL\nHSPU\nCONDITIONING\nEMOM 18`\nA: 12/10 Cals Erg\nB: 8 Burpee Box Jump Overs\nC: 4-6 HSPU",
+      "custom": true,
+      "sections": [
+        {
+          "name": "SKILL",
+          "content": "HSPU",
+          "scoreType": "notes"
+        },
+        {
+          "name": "CONDITIONING",
+          "format": "EMOM 18`",
+          "content": "A: 12/10 Cals Erg\nB: 8 Burpee Box Jump Overs\nC: 4-6 HSPU",
+          "scoreType": "notes"
+        }
+      ]
+    },
+    {
+      "id": "2026-08-18-wod",
+      "date": "2026-08-18",
+      "type": "WOD",
+      "title": "12 Hip Thrust",
+      "rawText": "18 de Agosto de 2026  - WOD \n\n06:25 - 07:20\nSTRENGTH ENDURANCE\n3 Super-Sets:\n12 Hip Thrust\n20 2DB Walking Lunges\nRest 1`30``/Set\nCONDITIONING\n5 Sets:\n2` ON / 1` OFF\n200 m Run\n12 Goblet Squats\nMáximo de Double Unders no tempo restante",
+      "custom": true,
+      "sections": [
+        {
+          "name": "STRENGTH ENDURANCE",
+          "format": "3 Super-Sets:",
+          "content": "12 Hip Thrust\n20 2DB Walking Lunges\nRest 1`30``/Set",
+          "scoreType": "notes"
+        },
+        {
+          "name": "CONDITIONING",
+          "format": "5 Sets:",
+          "content": "2` ON / 1` OFF\n200 m Run\n12 Goblet Squats\nMáximo de Double Unders no tempo restante",
+          "scoreType": "notes"
+        }
+      ]
+    }
+  ],
   "overrides": {},
   "manualPrs": [
     {
@@ -220,7 +279,6 @@
   ],
   "coachFeedback": {
     "kinds": {},
-    "suggestionTypes": {},
-    "dismissedIds": []
+    "suggestionTypes": {}
   }
 }
