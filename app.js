@@ -1273,15 +1273,37 @@
   }
 
   function parseType(text) {
+    const header = String(text || "")
+      .replace(/\r\n/g, "\n")
+      .split("\n")
+      .slice(0, 6)
+      .join(" ")
+      .toUpperCase();
+
+    if (/\bWOD\b/.test(header)) return "WOD";
+    if (/\bHYBRID\b/.test(header)) return "HYBRID";
+    if (/\bFBB\b/.test(header)) return "FBB";
+    if (/\bHIT\b/.test(header)) return "HIT";
+    if (/\bOTHER\b/.test(header)) return "OTHER";
+
     const upper = text.toUpperCase();
     if (/\bWALK\b/.test(upper)) return "WALK";
-    if (/\bRUN\b/.test(upper)) return "RUN";
-    if (/\bFBB\b/.test(upper)) return "FBB";
-    if (/\bHYBRID\b/.test(upper)) return "HYBRID";
-    if (/\bHIT\b/.test(upper)) return "HIT";
-    if (/\bOTHER\b/.test(upper)) return "OTHER";
+    if (/\bRUN\b/.test(upper) && !/\d+\s*M\s+RUN\b/.test(upper)) return "RUN";
     if (/\bWOD\b/.test(upper)) return "WOD";
     return "WOD";
+  }
+
+  function isTypeOnlyLine(line) {
+    const t = String(line || "")
+      .trim()
+      .replace(/^[•\-–—*]+(\s+)?/, "");
+    return /^(WOD|HYBRID(?:\s+DOUBLES)?|FBB|HIT|OTHER)\b/i.test(t) && !parseDate(t);
+  }
+
+  function isDateOnlyBlock(lines) {
+    const nonEmpty = lines.map((l) => l.trim()).filter(Boolean);
+    if (nonEmpty.length !== 1) return false;
+    return Boolean(parseDate(nonEmpty[0])) && !/\b(WOD|HYBRID|FBB|RUN|WALK|HIT|OTHER)\b/i.test(nonEmpty[0]);
   }
 
   function parseActivityLine(line) {
@@ -1544,7 +1566,9 @@
       const prev = i > 0 ? lines[i - 1].trim() : "";
       const prevBlank = i === 0 || !prev || /^[_—\-]+$/.test(prev);
       if (isSessionStartLine(line, { prevBlank }) && current.some((l) => l.trim())) {
-        flush();
+        const mergeWithDateHeader =
+          isDateOnlyBlock(current) && isTypeOnlyLine(line);
+        if (!mergeWithDateHeader) flush();
       }
       current.push(line);
     }
