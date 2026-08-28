@@ -29,6 +29,9 @@ jobs:
           ISO=$(git log -1 --format=%cI)
           HASH=$(git rev-parse --short HEAD)
           printf '{"updatedAt":"%s","commit":"%s"}\n' "$ISO" "$HASH" > data/version.json
+          for asset in app.js styles.css prs.js coach.js calendar.js data/workouts.js; do
+            sed -i "s|${asset}\"|${asset}?v=${HASH}\"|g" index.html
+          done
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

@@ -1300,10 +1300,17 @@
     return /^(WOD|HYBRID(?:\s+DOUBLES)?|FBB|HIT|OTHER)\b/i.test(t) && !parseDate(t);
   }
 
-  function isDateOnlyBlock(lines) {
-    const nonEmpty = lines.map((l) => l.trim()).filter(Boolean);
-    if (nonEmpty.length !== 1) return false;
-    return Boolean(parseDate(nonEmpty[0])) && !/\b(WOD|HYBRID|FBB|RUN|WALK|HIT|OTHER)\b/i.test(nonEmpty[0]);
+  function blockHasDate(lines) {
+    return lines.some((line) => parseDate(line));
+  }
+
+  function blockHasType(lines) {
+    return /\b(WOD|HYBRID(?:\s+DOUBLES)?|FBB|HIT|OTHER)\b/i.test(
+      lines
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .join(" ")
+    );
   }
 
   function parseActivityLine(line) {
@@ -1566,9 +1573,9 @@
       const prev = i > 0 ? lines[i - 1].trim() : "";
       const prevBlank = i === 0 || !prev || /^[_—\-]+$/.test(prev);
       if (isSessionStartLine(line, { prevBlank }) && current.some((l) => l.trim())) {
-        const mergeWithDateHeader =
-          isDateOnlyBlock(current) && isTypeOnlyLine(line);
-        if (!mergeWithDateHeader) flush();
+        const mergePendingType =
+          isTypeOnlyLine(line) && blockHasDate(current) && !blockHasType(current);
+        if (!mergePendingType) flush();
       }
       current.push(line);
     }
