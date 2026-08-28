@@ -1293,11 +1293,35 @@
     return "WOD";
   }
 
-  function isTypeOnlyLine(line) {
-    const t = String(line || "")
+  const SESSION_TYPE_LINE = /^(WOD|HYBRID(?:\s+DOUBLES)?|FBB|RUN|WALK|HIT|OTHER)$/i;
+
+  function normalizeSessionLine(line) {
+    return String(line || "")
       .trim()
       .replace(/^[•\-–—*]+(\s+)?/, "");
-    return /^(WOD|HYBRID(?:\s+DOUBLES)?|FBB|OTHER)\b/i.test(t) && !parseDate(t);
+  }
+
+  function isDateHeaderLine(line) {
+    const t = normalizeSessionLine(line);
+    if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/.test(t)) return true;
+    if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/.test(t)) return true;
+    if (/^\d{1,2}\s+de\s+[a-zçãáéíóú]+\s+de\s+\d{4}/i.test(t)) return true;
+    return false;
+  }
+
+  function isSessionTypeLine(line) {
+    return SESSION_TYPE_LINE.test(normalizeSessionLine(line));
+  }
+
+  function extractClassTime(text) {
+    for (const line of String(text || "").split("\n")) {
+      if (isClassTimeLine(line)) return line.trim();
+    }
+    return "";
+  }
+
+  function isTypeOnlyLine(line) {
+    return isSessionTypeLine(line) && !parseDate(normalizeSessionLine(line));
   }
 
   function isSectionHeaderLine(line) {
@@ -1311,10 +1335,20 @@
     return /^\d{1,2}:\d{2}\s*[-–]\s*\d{1,2}:\d{2}\s*$/.test(String(line || "").trim());
   }
 
-  function blockHasSectionHeader(text) {
+  function blockLines(text) {
     return String(text || "")
       .split("\n")
-      .some((line) => isSectionHeaderLine(line));
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }
+
+  function isHeaderOnlyBlock(text) {
+    const lines = blockLines(text);
+    if (!lines.length) return false;
+    return lines.every(
+      (line) =>
+        isDateHeaderLine(line) || isClassTimeLine(line) || isSessionTypeLine(line)
+    );
   }
 
   function consolidateEntryBlocks(blocks) {
@@ -1324,12 +1358,7 @@
     let i = 0;
     while (i < blocks.length) {
       let block = blocks[i];
-      while (
-        i + 1 < blocks.length &&
-        parseDate(block) &&
-        !blockHasSectionHeader(block) &&
-        blockHasSectionHeader(blocks[i + 1])
-      ) {
+      while (i + 1 < blocks.length && isHeaderOnlyBlock(block)) {
         block = `${block}\n${blocks[i + 1]}`;
         i++;
       }
@@ -1583,16 +1612,11 @@
   }
 
   function isSessionStartLine(line, { prevBlank = true } = {}) {
-    const t = String(line || "")
-      .trim()
-      .replace(/^[•\-–—*]+(\s+)?/, "");
+    const t = normalizeSessionLine(line);
     if (!t) return false;
     if (parseActivityLine(t)) return true;
-    if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/.test(t)) return true;
-    if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/.test(t)) return true;
-    // Portuguese long dates only start a session after a blank/separator line
-    if (/^\d{1,2}\s+de\s+[a-zçãáéíóú]+\s+de\s+\d{4}/i.test(t)) return prevBlank;
-    if (/^(WOD|HYBRID(?:\s+DOUBLES)?|FBB|OTHER)\b/i.test(t) && t.length < 40) return prevBlank;
+    if (isDateHeaderLine(t)) return true;
+    if (isSessionTypeLine(t)) return prevBlank;
     return false;
   }
 
@@ -1719,6 +1743,46 @@
     return [entry];
   }
 
+  function gymSessionKey(entry) {
+    return `${entry.date}|${extractClassTime(entry.rawText || "")}`;
+  }
+
+  function mergeGymEntriesByDateAndTime(entries) {
+    const out = [];
+    const groups = new Map();
+    const groupOrder = [];
+
+    for (const entry of entries) {
+      if (entry.activity) {
+        out.push(entry);
+        continue;
+      }
+      const key = gymSessionKey(entry);
+      if (!groups.has(key)) {
+        groups.set(key, []);
+        groupOrder.push(key);
+      }
+      groups.get(key).push(entry);
+    }
+
+    for (const key of groupOrder) {
+      const group = groups.get(key);
+      if (group.length === 1) {
+        out.push(group[0]);
+        continue;
+      }
+      const combined = group
+        .map((entry) => entry.rawText || "")
+        .filter(Boolean)
+        .join("\n\n");
+      const merged = parseSingleWorkoutBlock(combined, [...out]);
+      if (merged.length) out.push(...merged);
+      else out.push(group[0]);
+    }
+
+    return out;
+  }
+
   function parseWorkoutText(raw) {
     const text = raw.trim();
     if (!text) return null;
@@ -1730,7 +1794,8 @@
     for (const block of blocks) {
       results.push(...parseSingleWorkoutBlock(block, results));
     }
-    return results.length ? results : null;
+    const merged = mergeGymEntriesByDateAndTime(results);
+    return merged.length ? merged : null;
   }
 
   function detectEntryCount(raw) {
@@ -2175,7 +2240,7 @@
       <form class="add-form" id="add-form">
         <div>
           <h1 id="add-workout-title">Add workout</h1>
-          <p class="hint">Paste one or many sessions. Multiple WODs/Hybrids (date headers) or Run/Walk lines are split into separate entries.</p>
+          <p class="hint">Paste one or many sessions. Splits on date lines, standalone type lines (WOD, Hybrid, FBB, Run, Walk, HIT, Other), or Run/Walk activity rows. Each date and class time is one entry.</p>
         </div>
         <label class="field full">
           <span class="sr-only">Workout text</span>
