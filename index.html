@@ -188,9 +188,18 @@
           <button class="btn btn-ghost" type="button" id="export-csv-btn">
             Export CSV
           </button>
+          <button class="btn btn-ghost" type="button" id="export-backup-btn">
+            Export backup
+          </button>
+          <button class="btn btn-ghost" type="button" id="import-backup-btn">
+            Import backup
+          </button>
+          <input type="file" id="import-backup-input" accept="application/json,.json" hidden />
         </div>
+        <p class="footer-note footer-storage-note">Sessions you add are saved on this device. Use backup to move them to another phone or browser.</p>
         <p class="last-access" id="last-code-update" aria-live="polite"></p>
         <p class="last-access" id="last-access" aria-live="polite"></p>
+        <p class="footer-note">Produced by Tiago Bogalho with AI Support</p>
       </footer>
     </div>
     <div class="chart-balloon" id="chart-balloon" hidden></div>

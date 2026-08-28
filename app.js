@@ -73,6 +73,9 @@
     addWorkoutClose: document.getElementById("add-workout-close"),
     addWorkoutBackdrop: document.getElementById("add-workout-backdrop"),
     exportBtn: document.getElementById("export-csv-btn"),
+    exportBackupBtn: document.getElementById("export-backup-btn"),
+    importBackupBtn: document.getElementById("import-backup-btn"),
+    importBackupInput: document.getElementById("import-backup-input"),
     prsGrid: document.getElementById("prs-grid"),
     prsRefresh: document.getElementById("prs-refresh"),
     prsAdd: document.getElementById("prs-add"),
@@ -2992,6 +2995,85 @@
     );
   }
 
+  function exportBackup() {
+    const payload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      logs: state.logs,
+      custom: state.custom,
+      overrides: state.overrides,
+      manualPrs: state.manualPrs,
+      coachFeedback: state.coachFeedback,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `forge-log-backup-${todayIso()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showBanner("Backup exported.");
+  }
+
+  function mergeCustomWorkouts(items) {
+    const byId = new Map(state.custom.map((w) => [w.id, w]));
+    for (const workout of items || []) {
+      if (workout?.id) byId.set(workout.id, workout);
+    }
+    state.custom = [...byId.values()];
+  }
+
+  function mergeManualPrs(items) {
+    const byId = new Map(state.manualPrs.map((pr) => [pr.id, pr]));
+    for (const pr of items || []) {
+      if (pr?.id) byId.set(pr.id, pr);
+    }
+    state.manualPrs = [...byId.values()];
+  }
+
+  function importBackup(data) {
+    if (!data || typeof data !== "object" || data.version !== 1) {
+      throw new Error("Invalid backup file.");
+    }
+    if (data.logs && typeof data.logs === "object") {
+      state.logs = { ...state.logs, ...data.logs };
+    }
+    if (Array.isArray(data.custom)) mergeCustomWorkouts(data.custom);
+    if (data.overrides && typeof data.overrides === "object") {
+      state.overrides = { ...state.overrides, ...data.overrides };
+    }
+    if (Array.isArray(data.manualPrs)) mergeManualPrs(data.manualPrs);
+    if (data.coachFeedback && typeof data.coachFeedback === "object") {
+      state.coachFeedback = {
+        kinds: { ...state.coachFeedback.kinds, ...data.coachFeedback.kinds },
+        suggestionTypes: {
+          ...state.coachFeedback.suggestionTypes,
+          ...data.coachFeedback.suggestionTypes,
+        },
+      };
+    }
+    saveLogs();
+    saveCustom();
+    saveOverrides();
+    saveManualPrs();
+    saveCoachFeedback();
+    ensurePastDueComplete();
+    ensureSeedPrs();
+    renderPrs();
+    renderStats();
+    renderWorkload();
+    renderList();
+    renderDetail();
+    renderCoach();
+    renderCalendar();
+    const count = allWorkouts().length;
+    showBanner(`Backup imported. ${count} session${count === 1 ? "" : "s"} available.`);
+  }
+
   function exportCsv() {
     const workouts = filteredWorkouts().slice().sort((a, b) => a.date.localeCompare(b.date));
     if (!workouts.length) {
@@ -3061,6 +3143,26 @@
 
   if (els.exportBtn) {
     els.exportBtn.addEventListener("click", exportCsv);
+  }
+
+  if (els.exportBackupBtn) {
+    els.exportBackupBtn.addEventListener("click", exportBackup);
+  }
+
+  if (els.importBackupBtn && els.importBackupInput) {
+    els.importBackupBtn.addEventListener("click", () => els.importBackupInput.click());
+    els.importBackupInput.addEventListener("change", async () => {
+      const file = els.importBackupInput.files?.[0];
+      els.importBackupInput.value = "";
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        importBackup(data);
+      } catch {
+        showBanner("Could not import backup. Check the file and try again.", true);
+      }
+    });
   }
 
   if (els.prsRefresh) {
@@ -3241,6 +3343,9 @@
   initLastAccess();
   initCodeUpdate();
   state.panelsOpen = { ...DEFAULT_PANELS_OPEN };
+  if (window.matchMedia("(max-width: 700px)").matches) {
+    state.panelsOpen.sessions = true;
+  }
   syncFormulaVisibility();
   syncAllPanels();
   syncDetailPanel();
