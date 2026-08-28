@@ -1126,7 +1126,6 @@
       state.logs[id] = deletedLog;
       saveCustom({ skipCloudPush: true });
       saveLogs({ skipCloudPush: true });
-      syncCloudAfterLocalChange();
       return true;
     }
     // Seeded sessions can't be removed from data file; mark deleted in logs
@@ -1134,11 +1133,10 @@
     delete state.overrides[id];
     saveOverrides({ skipCloudPush: true });
     saveLogs({ skipCloudPush: true });
-    syncCloudAfterLocalChange();
     return true;
   }
 
-  function afterWorkoutDeleted(deletedId) {
+  async function afterWorkoutDeleted(deletedId) {
     if (state.selectedId === deletedId) {
       state.selectedId =
         allWorkouts().sort((a, b) => b.date.localeCompare(a.date))[0]?.id || null;
@@ -1151,7 +1149,18 @@
     renderList();
     renderDetail();
     syncDetailPanel();
-    showBanner("Session deleted.");
+    const synced = await syncCloudAfterLocalChange();
+    renderSyncStatus();
+    if (!loadSyncSettings().token) {
+      showBanner(
+        "Session deleted on this device. Add a GitHub token in Sync devices to sync the delete.",
+        true
+      );
+    } else if (synced?.ok) {
+      showBanner("Session deleted and synced to cloud.");
+    } else {
+      showBanner("Session deleted locally. Cloud upload failed — try Upload now.", true);
+    }
   }
 
   function confirmDeleteWorkout(id) {
@@ -3542,19 +3551,24 @@
       importBackup(data, { silent: true, skipCloudPush: true });
       const after = allWorkouts().length;
       const added = Math.max(0, after - before);
+      const removed = Math.max(0, before - after);
       settings.lastPullAt = new Date().toISOString();
       rememberRemoteSnapshot(data, settings);
 
       if (!silent) {
-        showBanner(
-          added > 0
-            ? `Synced ${added} new session${added === 1 ? "" : "s"} from cloud.`
-            : "Cloud sync is up to date."
-        );
+        if (added > 0) {
+          showBanner(`Synced ${added} new session${added === 1 ? "" : "s"} from cloud.`);
+        } else if (removed > 0) {
+          showBanner(`Removed ${removed} session${removed === 1 ? "" : "s"} from cloud sync.`);
+        } else {
+          showBanner("Cloud sync is up to date.");
+        }
       } else if (added > 0) {
         showBanner(`Synced ${added} session${added === 1 ? "" : "s"} from cloud.`);
+      } else if (removed > 0) {
+        showBanner(`Removed ${removed} session${removed === 1 ? "" : "s"} from cloud sync.`);
       }
-      return { ok: true, changed: added > 0, added };
+      return { ok: true, changed: added > 0 || removed > 0, added, removed };
     } catch {
       if (!silent) showBanner("Could not download cloud backup.", true);
       return { ok: false, reason: "error" };
@@ -3659,7 +3673,7 @@
       <form class="add-form sync-form" id="sync-form">
         <div>
           <h1 id="sync-devices-title">Sync devices</h1>
-          <p class="hint">Only sessions you add yourself are uploaded. Built-in sessions come from the app. Upload from the device that has your missing workouts, then pull on the others.</p>
+          <p class="hint">Add a GitHub token on each device where you add or delete workouts. Deletes and new sessions upload automatically; other devices pull every 30 seconds.</p>
         </div>
         <p class="sync-meta" id="sync-counts">This device: ${allWorkouts().length} sessions (${localCustom} added by you) · Cloud: loading…</p>
         <label class="field full">
@@ -3763,10 +3777,14 @@
   function mergeCustomWorkouts(items) {
     const byId = new Map(state.custom.map((w) => [w.id, w]));
     for (const workout of items || []) {
-      if (workout?.id) byId.set(workout.id, workout);
+      if (!workout?.id) continue;
+      if (state.logs[workout.id]?.deleted) continue;
+      byId.set(workout.id, workout);
+    }
+    for (const id of Object.keys(state.logs)) {
+      if (state.logs[id]?.deleted) byId.delete(id);
     }
     state.custom = [...byId.values()];
-    for (const workout of state.custom) clearDeletedTombstone(workout.id);
     pruneDeletedCustomWorkouts();
   }
 
