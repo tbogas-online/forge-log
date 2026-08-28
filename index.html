@@ -197,10 +197,14 @@
           <button class="btn btn-ghost" type="button" id="import-csv-btn">
             Import CSV
           </button>
+          <button class="btn btn-ghost" type="button" id="sync-devices-btn">
+            Sync devices
+          </button>
           <input type="file" id="import-backup-input" accept="application/json,.json" hidden />
           <input type="file" id="import-csv-input" accept="text/csv,.csv" hidden />
         </div>
-        <p class="footer-note footer-storage-note">Sessions you add are saved on this device. Use backup to move them to another phone or browser.</p>
+        <p class="footer-note footer-storage-note">Sessions sync from the cloud backup in this repo. Open <strong>Sync devices</strong> and add a GitHub token on each device you use to add workouts.</p>
+        <p class="last-access" id="sync-status" aria-live="polite"></p>
         <p class="last-access" id="last-code-update" aria-live="polite"></p>
         <p class="last-access" id="last-access" aria-live="polite"></p>
         <p class="footer-note">Produced by Tiago Bogalho with AI Support</p>
@@ -220,6 +224,21 @@
           <button type="button" class="add-workout-close" id="add-workout-close" aria-label="Close">×</button>
         </div>
         <div class="add-workout-host" id="add-workout-host"></div>
+      </div>
+    </div>
+
+    <div class="add-workout-modal" id="sync-devices-modal" hidden>
+      <button type="button" class="add-workout-backdrop" id="sync-devices-backdrop" aria-label="Close sync devices"></button>
+      <div
+        class="add-workout-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sync-devices-title"
+      >
+        <div class="add-workout-sheet-head">
+          <button type="button" class="add-workout-close" id="sync-devices-close" aria-label="Close">×</button>
+        </div>
+        <div class="add-workout-host" id="sync-devices-host"></div>
       </div>
     </div>
 
