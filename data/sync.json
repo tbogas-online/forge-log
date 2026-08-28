@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-08-28T11:58:39.006Z",
+  "exportedAt": "2026-08-28T11:58:56.813Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -197,6 +197,12 @@
       "completed": true,
       "completedManual": true,
       "updatedAt": "2026-08-28T11:57:39.324Z"
+    },
+    "2026-08-28-other": {
+      "deleted": true,
+      "completed": true,
+      "completedManual": true,
+      "updatedAt": "2026-08-28T11:58:56.243Z"
     }
   },
   "custom": [
@@ -239,21 +245,6 @@
           "name": "CONDITIONING",
           "format": "5 Sets:",
           "content": "2` ON / 1` OFF\n200 m Run\n12 Goblet Squats\nMáximo de Double Unders no tempo restante",
-          "scoreType": "notes"
-        }
-      ]
-    },
-    {
-      "id": "2026-08-28-other",
-      "date": "2026-08-28",
-      "type": "OTHER",
-      "title": "Other",
-      "rawText": "Other",
-      "custom": true,
-      "sections": [
-        {
-          "name": "WORKOUT",
-          "content": "Other",
           "scoreType": "notes"
         }
       ]
