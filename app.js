@@ -76,6 +76,8 @@
     exportBackupBtn: document.getElementById("export-backup-btn"),
     importBackupBtn: document.getElementById("import-backup-btn"),
     importBackupInput: document.getElementById("import-backup-input"),
+    importCsvBtn: document.getElementById("import-csv-btn"),
+    importCsvInput: document.getElementById("import-csv-input"),
     prsGrid: document.getElementById("prs-grid"),
     prsRefresh: document.getElementById("prs-refresh"),
     prsAdd: document.getElementById("prs-add"),
@@ -2995,6 +2997,183 @@
     );
   }
 
+  function parseCsvRecords(text) {
+    const rows = [];
+    let row = [];
+    let field = "";
+    let inQuotes = false;
+    const src = String(text || "").replace(/^\uFEFF/, "");
+
+    const pushField = () => {
+      row.push(field);
+      field = "";
+    };
+    const pushRow = () => {
+      if (row.length) rows.push(row);
+      row = [];
+    };
+
+    for (let i = 0; i < src.length; i++) {
+      const c = src[i];
+      const next = src[i + 1];
+      if (inQuotes) {
+        if (c === '"' && next === '"') {
+          field += '"';
+          i++;
+        } else if (c === '"') {
+          inQuotes = false;
+        } else {
+          field += c;
+        }
+      } else if (c === '"') {
+        inQuotes = true;
+      } else if (c === ",") {
+        pushField();
+      } else if (c === "\n") {
+        pushField();
+        pushRow();
+      } else if (c !== "\r") {
+        field += c;
+      }
+    }
+
+    pushField();
+    if (row.some((cell) => cell)) pushRow();
+    return rows;
+  }
+
+  function csvSegmentCompleted(segment) {
+    const match = segment.match(/\|\s*Completed:\s*(yes|no)\s*$/i);
+    return match ? match[1].toLowerCase() === "yes" : null;
+  }
+
+  function csvSegmentBody(segment) {
+    return segment
+      .replace(/^\[[A-Z]+\]\s*/i, "")
+      .replace(/\s\|\s*Completed:\s*(yes|no)\s*$/i, "")
+      .trim();
+  }
+
+  function csvSegmentType(segment) {
+    return segment.match(/^\[([A-Z]+)\]/i)?.[1]?.toUpperCase() || null;
+  }
+
+  function csvDateHeader(isoDate, type) {
+    const [year, month, day] = isoDate.split("-");
+    return `${day}/${month}/${year} - ${type}`;
+  }
+
+  function csvSegmentToPaste(date, segment) {
+    const type = csvSegmentType(segment);
+    if (!type) return null;
+    const body = csvSegmentBody(segment);
+    if (!body) return null;
+
+    if (type === "RUN" || type === "WALK") {
+      const duration = body.match(/Duration:\s*([^|]+)/i)?.[1]?.trim();
+      const distance = body.match(/Distance:\s*([\d.]+)\s*km/i)?.[1];
+      const elevation = body.match(/Elevation:\s*(\d+(?:\.\d+)?)\s*m/i)?.[1] || "0";
+      const title = body.split("|")[0].trim() || (type === "RUN" ? "Outdoor run" : "Outdoor walk");
+      if (duration && distance) {
+        const [year, month, day] = date.split("-");
+        const stamp = `${day.padStart(2, "0")}/${month.padStart(2, "0")}/${year}`;
+        const label = type === "WALK" ? "Walk" : "Run";
+        return `${label} ${stamp} ${title} ${duration} ${distance} km ${elevation} m`;
+      }
+      return `${csvDateHeader(date, type)}\n${title}`;
+    }
+
+    const parts = body.split(/\s\|\s/);
+    const title = parts[0] || type;
+    const rest = parts.slice(1).join("\n");
+    return `${csvDateHeader(date, type)}\n${title}${rest ? `\n${rest}` : ""}`;
+  }
+
+  function findWorkoutForCsvSegment(date, segment) {
+    const type = csvSegmentType(segment);
+    const body = csvSegmentBody(segment);
+    if (!type || !body) return null;
+    const title = body.split(/\s\|\s/)[0].trim();
+    const candidates = allWorkouts().filter((w) => w.date === date && w.type === type);
+    if (!candidates.length) return null;
+    const exact = candidates.find((w) => w.title === title);
+    if (exact) return exact;
+    return (
+      candidates.find((w) => title.includes(w.title) || w.title.includes(title)) ||
+      candidates[0]
+    );
+  }
+
+  function importCsv(text) {
+    const rows = parseCsvRecords(text);
+    if (!rows.length) throw new Error("Empty CSV.");
+
+    const header = rows[0].map((cell) => cell.trim().toLowerCase());
+    const dateIdx = header.indexOf("date");
+    const detailIdx = header.indexOf("detail");
+    if (dateIdx < 0 || detailIdx < 0) throw new Error("Invalid Forge Log CSV.");
+
+    let added = 0;
+    let updated = 0;
+    let failed = 0;
+
+    for (let i = 1; i < rows.length; i++) {
+      const date = rows[i][dateIdx]?.trim();
+      const detail = rows[i][detailIdx] || "";
+      if (!date || !detail) continue;
+
+      const segments = detail.split(/\s\|\|\s/);
+      for (const segment of segments) {
+        const completed = csvSegmentCompleted(segment);
+        const existing = findWorkoutForCsvSegment(date, segment);
+        if (existing) {
+          if (completed != null) {
+            state.logs[existing.id] = { ...getLog(existing.id), completed };
+            updated += 1;
+          }
+          continue;
+        }
+
+        const paste = csvSegmentToPaste(date, segment);
+        if (!paste) {
+          failed += 1;
+          continue;
+        }
+
+        const report = importWorkoutsFromText(paste);
+        if (!report.accepted.length) {
+          failed += 1;
+          continue;
+        }
+
+        for (const workout of report.accepted) {
+          state.custom.push(workout);
+          if (completed != null) {
+            state.logs[workout.id] = { ...getLog(workout.id), completed };
+          }
+          added += 1;
+        }
+      }
+    }
+
+    saveLogs();
+    saveCustom();
+    ensurePastDueComplete();
+    ensureSeedPrs();
+    renderPrs();
+    renderStats();
+    renderWorkload();
+    renderList();
+    renderDetail();
+    renderCoach();
+    renderCalendar();
+
+    const count = allWorkouts().length;
+    showBanner(
+      `CSV imported: ${added} added, ${updated} updated${failed ? `, ${failed} skipped` : ""}. ${count} sessions available.`
+    );
+  }
+
   function exportBackup() {
     const payload = {
       version: 1,
@@ -3161,6 +3340,21 @@
         importBackup(data);
       } catch {
         showBanner("Could not import backup. Check the file and try again.", true);
+      }
+    });
+  }
+
+  if (els.importCsvBtn && els.importCsvInput) {
+    els.importCsvBtn.addEventListener("click", () => els.importCsvInput.click());
+    els.importCsvInput.addEventListener("change", async () => {
+      const file = els.importCsvInput.files?.[0];
+      els.importCsvInput.value = "";
+      if (!file) return;
+      try {
+        const text = await file.text();
+        importCsv(text);
+      } catch {
+        showBanner("Could not import CSV. Check the file and try again.", true);
       }
     });
   }
