@@ -1374,6 +1374,13 @@ body {
   font-size: 0.78rem;
 }
 
+.sync-warning {
+  margin: 0.65rem 0 0;
+  color: #ffb454;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 .add-workout-modal {
   position: fixed;
   inset: 0;

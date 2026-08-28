@@ -3379,14 +3379,31 @@
     return date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
   }
 
+  function localCustomCount() {
+    return state.custom.length;
+  }
+
+  async function fetchRemoteBackupData() {
+    const settings = loadSyncSettings();
+    const { owner, repo, branch } = syncRepoParts(settings);
+    const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${SYNC_FILE_PATH}?t=${Date.now()}`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data || data.version !== 1) return null;
+    return data;
+  }
+
   function renderSyncStatus() {
     if (!els.syncStatus) return;
     const settings = loadSyncSettings();
     const count = allWorkouts().length;
+    const custom = localCustomCount();
     const parts = [`${count} session${count === 1 ? "" : "s"} on this device`];
+    if (custom) parts.push(`${custom} added by you`);
     if (settings.lastPullAt) parts.push(`pulled ${formatSyncTime(settings.lastPullAt)}`);
     if (settings.token) {
-      parts.push(settings.lastPushAt ? `uploaded ${formatSyncTime(settings.lastPushAt)}` : "upload ready");
+      parts.push(settings.lastPushAt ? `uploaded ${formatSyncTime(settings.lastPushAt)}` : "not uploaded yet");
     } else {
       parts.push("add GitHub token to upload");
     }
@@ -3487,15 +3504,32 @@
           }),
         }
       );
-      if (!putRes.ok) throw new Error("github-write");
+      if (!putRes.ok) {
+        let detail = "";
+        try {
+          const err = await putRes.json();
+          detail = err?.message ? `: ${err.message}` : "";
+        } catch {
+          /* ignore */
+        }
+        throw new Error(`github-write${detail}`);
+      }
 
       settings.lastPushAt = new Date().toISOString();
       settings.lastRemoteAt = payload.exportedAt;
       saveSyncSettings(settings);
       if (!silent) showBanner("Cloud backup uploaded.");
       return { ok: true };
-    } catch {
-      if (!silent) showBanner("Could not upload cloud backup. Check the GitHub token.", true);
+    } catch (err) {
+      const detail = String(err?.message || "").replace(/^github-write:?/, "").trim();
+      if (!silent) {
+        showBanner(
+          detail
+            ? `Upload failed${detail.startsWith(":") ? "" : ": "}${detail}`
+            : "Could not upload cloud backup. Check the GitHub token has Contents read/write for this repo.",
+          true
+        );
+      }
       return { ok: false, reason: "error" };
     }
   }
@@ -3514,12 +3548,14 @@
   function openSyncDevicesModal() {
     if (!els.syncDevicesModal || !els.syncDevicesHost) return;
     const settings = loadSyncSettings();
+    const localCustom = localCustomCount();
     els.syncDevicesHost.innerHTML = `
       <form class="add-form sync-form" id="sync-form">
         <div>
           <h1 id="sync-devices-title">Sync devices</h1>
-          <p class="hint">All devices read the same cloud backup. Add a GitHub token on each device you use to add or edit sessions so changes upload automatically.</p>
+          <p class="hint">Only sessions you add yourself are uploaded. Built-in sessions come from the app. Upload from the device that has your missing workouts, then pull on the others.</p>
         </div>
+        <p class="sync-meta" id="sync-counts">This device: ${allWorkouts().length} sessions (${localCustom} added by you) · Cloud: loading…</p>
         <label class="field full">
           <span>GitHub token</span>
           <input
@@ -3532,9 +3568,10 @@
         </label>
         <p class="hint sync-help">Create a fine-grained token with <strong>Contents: Read and write</strong> for this repo, or a classic token with <strong>repo</strong> scope. Stored only on this device.</p>
         <p class="sync-meta" id="sync-meta"></p>
+        <p class="sync-warning" id="sync-warning" hidden></p>
         <div class="actions">
-          <button class="btn btn-primary" type="button" id="sync-pull-btn">Pull now</button>
-          <button class="btn btn-ghost" type="button" id="sync-push-btn">Upload now</button>
+          <button class="btn btn-primary" type="button" id="sync-push-btn">Upload now</button>
+          <button class="btn btn-ghost" type="button" id="sync-pull-btn">Pull now</button>
           <button class="btn btn-ghost" type="submit">Save token</button>
         </div>
       </form>
@@ -3545,13 +3582,37 @@
       metaEl.textContent = `Last pull: ${formatSyncTime(settings.lastPullAt)} · Last upload: ${formatSyncTime(settings.lastPushAt)}`;
     }
 
-    document.getElementById("sync-form")?.addEventListener("submit", (e) => {
+    const countsEl = document.getElementById("sync-counts");
+    const warningEl = document.getElementById("sync-warning");
+    fetchRemoteBackupData().then((remote) => {
+      const remoteCustom = Array.isArray(remote?.custom) ? remote.custom.length : 0;
+      const remoteEmpty =
+        !remote ||
+        remote.exportedAt === "1970-01-01T00:00:00.000Z" ||
+        (remoteCustom === 0 && localCustomCount() === 0);
+      if (countsEl) {
+        countsEl.textContent = `This device: ${allWorkouts().length} sessions (${localCustomCount()} added by you) · Cloud: ${remoteCustom} added session${remoteCustom === 1 ? "" : "s"}`;
+      }
+      if (warningEl && localCustomCount() > remoteCustom) {
+        warningEl.hidden = false;
+        warningEl.textContent =
+          localCustomCount() > remoteCustom && !settings.lastPushAt
+            ? "You have sessions on this device that are not in the cloud yet. Tap Upload now on this device first."
+            : "This device has more added sessions than the cloud. Tap Upload now to share them.";
+      } else if (warningEl && remoteEmpty && localCustomCount() > 0) {
+        warningEl.hidden = false;
+        warningEl.textContent = "Cloud backup is still empty. Upload from this device before pulling on others.";
+      }
+    });
+
+    document.getElementById("sync-form")?.addEventListener("submit", async (e) => {
       e.preventDefault();
       const token = document.getElementById("sync-token")?.value.trim() || "";
       const next = { ...loadSyncSettings(), token };
       saveSyncSettings(next);
       showBanner(token ? "GitHub token saved on this device." : "GitHub token removed.");
-      if (token) scheduleCloudPush();
+      if (token) await pushCloudSync({ silent: false });
+      openSyncDevicesModal();
     });
 
     document.getElementById("sync-pull-btn")?.addEventListener("click", async () => {
