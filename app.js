@@ -1297,7 +1297,46 @@
     const t = String(line || "")
       .trim()
       .replace(/^[•\-–—*]+(\s+)?/, "");
-    return /^(WOD|HYBRID(?:\s+DOUBLES)?|FBB|HIT|OTHER)\b/i.test(t) && !parseDate(t);
+    return /^(WOD|HYBRID(?:\s+DOUBLES)?|FBB|OTHER)\b/i.test(t) && !parseDate(t);
+  }
+
+  function isSectionHeaderLine(line) {
+    const t = String(line || "")
+      .trim()
+      .replace(/^[•\-–—*]+(\s+)?/, "");
+    return new RegExp(`^(${SECTION_HEADERS.join("|")})\\b`, "i").test(t);
+  }
+
+  function isClassTimeLine(line) {
+    return /^\d{1,2}:\d{2}\s*[-–]\s*\d{1,2}:\d{2}\s*$/.test(String(line || "").trim());
+  }
+
+  function blockHasSectionHeader(text) {
+    return String(text || "")
+      .split("\n")
+      .some((line) => isSectionHeaderLine(line));
+  }
+
+  function consolidateEntryBlocks(blocks) {
+    if (blocks.length <= 1) return blocks;
+
+    const out = [];
+    let i = 0;
+    while (i < blocks.length) {
+      let block = blocks[i];
+      while (
+        i + 1 < blocks.length &&
+        parseDate(block) &&
+        !blockHasSectionHeader(block) &&
+        blockHasSectionHeader(blocks[i + 1])
+      ) {
+        block = `${block}\n${blocks[i + 1]}`;
+        i++;
+      }
+      out.push(block);
+      i++;
+    }
+    return out;
   }
 
   function blockHasDate(lines) {
@@ -1553,7 +1592,7 @@
     if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/.test(t)) return true;
     // Portuguese long dates only start a session after a blank/separator line
     if (/^\d{1,2}\s+de\s+[a-zçãáéíóú]+\s+de\s+\d{4}/i.test(t)) return prevBlank;
-    if (/^(WOD|HYBRID(?:\s+DOUBLES)?|FBB|HIT|OTHER)\b/i.test(t) && t.length < 40) return prevBlank;
+    if (/^(WOD|HYBRID(?:\s+DOUBLES)?|FBB|OTHER)\b/i.test(t) && t.length < 40) return prevBlank;
     return false;
   }
 
@@ -1572,7 +1611,12 @@
       const line = lines[i];
       const prev = i > 0 ? lines[i - 1].trim() : "";
       const prevBlank = i === 0 || !prev || /^[_—\-]+$/.test(prev);
-      if (isSessionStartLine(line, { prevBlank }) && current.some((l) => l.trim())) {
+      if (
+        isSessionStartLine(line, { prevBlank }) &&
+        !isSectionHeaderLine(line) &&
+        !isClassTimeLine(line) &&
+        current.some((l) => l.trim())
+      ) {
         const mergePendingType =
           isTypeOnlyLine(line) && blockHasDate(current) && !blockHasType(current);
         if (!mergePendingType) flush();
@@ -1580,7 +1624,8 @@
       current.push(line);
     }
     flush();
-    return blocks.length ? blocks : [];
+    const merged = consolidateEntryBlocks(blocks.length ? blocks : []);
+    return merged.length ? merged : [];
   }
 
   function parseSingleWorkoutBlock(block, pending = []) {
