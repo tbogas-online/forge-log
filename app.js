@@ -1438,6 +1438,20 @@
     };
   }
 
+  function clearDeletedTombstone(id) {
+    if (id && state.logs[id]?.deleted) delete state.logs[id];
+  }
+
+  function adoptCustomWorkouts(entries) {
+    for (const entry of entries || []) {
+      if (!entry?.id) continue;
+      clearDeletedTombstone(entry.id);
+      const idx = state.custom.findIndex((w) => w.id === entry.id);
+      if (idx >= 0) state.custom[idx] = entry;
+      else state.custom.push(entry);
+    }
+  }
+
   function uniqueId(date, type, extra = []) {
     const idBase = `${date}-${type.toLowerCase()}`;
     let id = idBase;
@@ -2308,8 +2322,9 @@
       }
 
       if (report.accepted.length) {
-        state.custom.push(...report.accepted);
+        adoptCustomWorkouts(report.accepted);
         saveCustom({ skipCloudPush: true });
+        saveLogs({ skipCloudPush: true });
         state.selectedId = report.accepted[report.accepted.length - 1].id;
         renderStats();
         renderList();
@@ -3344,10 +3359,14 @@
   }
 
   function buildBackupPayload() {
+    const logs = { ...state.logs };
+    for (const workout of state.custom) {
+      if (logs[workout.id]?.deleted) delete logs[workout.id];
+    }
     return {
       version: 1,
       exportedAt: new Date().toISOString(),
-      logs: state.logs,
+      logs,
       custom: state.custom,
       overrides: state.overrides,
       manualPrs: state.manualPrs,
@@ -3747,6 +3766,7 @@
       if (workout?.id) byId.set(workout.id, workout);
     }
     state.custom = [...byId.values()];
+    for (const workout of state.custom) clearDeletedTombstone(workout.id);
     pruneDeletedCustomWorkouts();
   }
 
