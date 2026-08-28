@@ -1,4 +1,4 @@
-(() => {
+(async () => {
   const STORAGE_KEY = "forge-log-entries-v1";
   const CUSTOM_KEY = "forge-log-custom-workouts-v1";
   const OVERRIDES_KEY = "forge-log-workout-overrides-v1";
@@ -7,6 +7,10 @@
   const PANELS_UI_KEY = "forge-log-panels-ui-v2";
   const LEGACY_CALENDAR_UI_KEY = "forge-log-calendar-ui-v1";
   const LAST_ACCESS_KEY = "forge-log-last-access-v1";
+  const SYNC_SETTINGS_KEY = "forge-log-sync-settings-v1";
+  const SYNC_REPO = "tbogas-online/forge-log";
+  const SYNC_BRANCH = "main";
+  const SYNC_FILE_PATH = "data/sync.json";
 
   const PANEL_IDS = ["workload", "coach", "calendar", "sessions", "prs", "detail"];
 
@@ -78,6 +82,12 @@
     importBackupInput: document.getElementById("import-backup-input"),
     importCsvBtn: document.getElementById("import-csv-btn"),
     importCsvInput: document.getElementById("import-csv-input"),
+    syncDevicesBtn: document.getElementById("sync-devices-btn"),
+    syncDevicesModal: document.getElementById("sync-devices-modal"),
+    syncDevicesHost: document.getElementById("sync-devices-host"),
+    syncDevicesClose: document.getElementById("sync-devices-close"),
+    syncDevicesBackdrop: document.getElementById("sync-devices-backdrop"),
+    syncStatus: document.getElementById("sync-status"),
     prsGrid: document.getElementById("prs-grid"),
     prsRefresh: document.getElementById("prs-refresh"),
     prsAdd: document.getElementById("prs-add"),
@@ -143,6 +153,7 @@
 
   function saveManualPrs() {
     localStorage.setItem(MANUAL_PR_KEY, JSON.stringify(state.manualPrs));
+    scheduleCloudPush();
   }
 
   function loadCoachFeedback() {
@@ -160,6 +171,7 @@
 
   function saveCoachFeedback() {
     localStorage.setItem(COACH_FEEDBACK_KEY, JSON.stringify(state.coachFeedback));
+    scheduleCloudPush();
   }
 
   function getDefaultCalendarMonth(custom = []) {
@@ -295,6 +307,7 @@
 
   function saveLogs() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.logs));
+    scheduleCloudPush();
   }
 
   function loadCustom() {
@@ -336,6 +349,7 @@
 
   function saveCustom() {
     localStorage.setItem(CUSTOM_KEY, JSON.stringify(state.custom));
+    scheduleCloudPush();
   }
 
   function loadOverrides() {
@@ -349,6 +363,7 @@
 
   function saveOverrides() {
     localStorage.setItem(OVERRIDES_KEY, JSON.stringify(state.overrides));
+    scheduleCloudPush();
   }
 
   function isActivityType(type) {
@@ -3315,8 +3330,8 @@
     );
   }
 
-  function exportBackup() {
-    const payload = {
+  function buildBackupPayload() {
+    return {
       version: 1,
       exportedAt: new Date().toISOString(),
       logs: state.logs,
@@ -3325,6 +3340,245 @@
       manualPrs: state.manualPrs,
       coachFeedback: state.coachFeedback,
     };
+  }
+
+  function loadSyncSettings() {
+    try {
+      const data = JSON.parse(localStorage.getItem(SYNC_SETTINGS_KEY) || "{}");
+      return data && typeof data === "object" ? data : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function saveSyncSettings(settings) {
+    localStorage.setItem(SYNC_SETTINGS_KEY, JSON.stringify(settings));
+    renderSyncStatus();
+  }
+
+  function syncRepoParts(settings = loadSyncSettings()) {
+    const [owner, repo] = String(settings.repo || SYNC_REPO).split("/");
+    return {
+      owner,
+      repo,
+      branch: settings.branch || SYNC_BRANCH,
+    };
+  }
+
+  function utf8ToBase64(str) {
+    const bytes = new TextEncoder().encode(str);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+
+  function formatSyncTime(iso) {
+    if (!iso) return "never";
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "never";
+    return date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  }
+
+  function renderSyncStatus() {
+    if (!els.syncStatus) return;
+    const settings = loadSyncSettings();
+    const count = allWorkouts().length;
+    const parts = [`${count} session${count === 1 ? "" : "s"} on this device`];
+    if (settings.lastPullAt) parts.push(`pulled ${formatSyncTime(settings.lastPullAt)}`);
+    if (settings.token) {
+      parts.push(settings.lastPushAt ? `uploaded ${formatSyncTime(settings.lastPushAt)}` : "upload ready");
+    } else {
+      parts.push("add GitHub token to upload");
+    }
+    els.syncStatus.textContent = `Cloud sync: ${parts.join(" · ")}`;
+  }
+
+  let cloudPushTimer = null;
+  function scheduleCloudPush() {
+    if (!loadSyncSettings().token) return;
+    clearTimeout(cloudPushTimer);
+    cloudPushTimer = setTimeout(() => {
+      pushCloudSync({ silent: true });
+    }, 4000);
+  }
+
+  async function pullCloudSync({ silent = true } = {}) {
+    try {
+      const settings = loadSyncSettings();
+      const { owner, repo, branch } = syncRepoParts(settings);
+      const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${SYNC_FILE_PATH}?t=${Date.now()}`;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) return { ok: false, reason: "missing" };
+
+      const data = await res.json();
+      if (!data || data.version !== 1) return { ok: false, reason: "invalid" };
+
+      const remoteAt = data.exportedAt || "";
+      if (settings.lastRemoteAt === remoteAt) {
+        settings.lastPullAt = new Date().toISOString();
+        saveSyncSettings(settings);
+        if (!silent) showBanner("Cloud sync is up to date.");
+        return { ok: true, changed: false, added: 0 };
+      }
+
+      const before = allWorkouts().length;
+      importBackup(data, { silent: true });
+      const after = allWorkouts().length;
+      const added = Math.max(0, after - before);
+      settings.lastRemoteAt = remoteAt;
+      settings.lastPullAt = new Date().toISOString();
+      saveSyncSettings(settings);
+
+      if (!silent) {
+        showBanner(
+          added > 0
+            ? `Synced ${added} new session${added === 1 ? "" : "s"} from cloud.`
+            : "Cloud sync is up to date."
+        );
+      } else if (added > 0) {
+        showBanner(`Synced ${added} session${added === 1 ? "" : "s"} from cloud.`);
+      }
+      return { ok: true, changed: added > 0, added };
+    } catch {
+      if (!silent) showBanner("Could not download cloud backup.", true);
+      return { ok: false, reason: "error" };
+    }
+  }
+
+  async function pushCloudSync({ silent = false } = {}) {
+    const settings = loadSyncSettings();
+    if (!settings.token) {
+      if (!silent) showBanner("Add a GitHub token in Sync devices to upload changes.", true);
+      return { ok: false, reason: "no-token" };
+    }
+
+    try {
+      const { owner, repo, branch } = syncRepoParts(settings);
+      const payload = buildBackupPayload();
+      const body = JSON.stringify(payload, null, 2);
+      const headers = {
+        Authorization: `Bearer ${settings.token}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+      };
+
+      let sha;
+      const metaRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${SYNC_FILE_PATH}?ref=${encodeURIComponent(branch)}`,
+        { headers }
+      );
+      if (metaRes.ok) {
+        const meta = await metaRes.json();
+        sha = meta.sha;
+      } else if (metaRes.status !== 404) {
+        throw new Error("github-read");
+      }
+
+      const putRes = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/contents/${SYNC_FILE_PATH}`,
+        {
+          method: "PUT",
+          headers: { ...headers, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: "Update Forge Log sync backup",
+            content: utf8ToBase64(body),
+            branch,
+            ...(sha ? { sha } : {}),
+          }),
+        }
+      );
+      if (!putRes.ok) throw new Error("github-write");
+
+      settings.lastPushAt = new Date().toISOString();
+      settings.lastRemoteAt = payload.exportedAt;
+      saveSyncSettings(settings);
+      if (!silent) showBanner("Cloud backup uploaded.");
+      return { ok: true };
+    } catch {
+      if (!silent) showBanner("Could not upload cloud backup. Check the GitHub token.", true);
+      return { ok: false, reason: "error" };
+    }
+  }
+
+  async function initCloudSync() {
+    await pullCloudSync({ silent: true });
+    renderSyncStatus();
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        pullCloudSync({ silent: true });
+      }
+    });
+    window.setInterval(() => pullCloudSync({ silent: true }), 3 * 60 * 1000);
+  }
+
+  function openSyncDevicesModal() {
+    if (!els.syncDevicesModal || !els.syncDevicesHost) return;
+    const settings = loadSyncSettings();
+    els.syncDevicesHost.innerHTML = `
+      <form class="add-form sync-form" id="sync-form">
+        <div>
+          <h1 id="sync-devices-title">Sync devices</h1>
+          <p class="hint">All devices read the same cloud backup. Add a GitHub token on each device you use to add or edit sessions so changes upload automatically.</p>
+        </div>
+        <label class="field full">
+          <span>GitHub token</span>
+          <input
+            type="password"
+            id="sync-token"
+            autocomplete="off"
+            placeholder="ghp_… or github_pat_…"
+            value="${escapeHtml(settings.token || "")}"
+          />
+        </label>
+        <p class="hint sync-help">Create a fine-grained token with <strong>Contents: Read and write</strong> for this repo, or a classic token with <strong>repo</strong> scope. Stored only on this device.</p>
+        <p class="sync-meta" id="sync-meta"></p>
+        <div class="actions">
+          <button class="btn btn-primary" type="button" id="sync-pull-btn">Pull now</button>
+          <button class="btn btn-ghost" type="button" id="sync-push-btn">Upload now</button>
+          <button class="btn btn-ghost" type="submit">Save token</button>
+        </div>
+      </form>
+    `;
+
+    const metaEl = document.getElementById("sync-meta");
+    if (metaEl) {
+      metaEl.textContent = `Last pull: ${formatSyncTime(settings.lastPullAt)} · Last upload: ${formatSyncTime(settings.lastPushAt)}`;
+    }
+
+    document.getElementById("sync-form")?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const token = document.getElementById("sync-token")?.value.trim() || "";
+      const next = { ...loadSyncSettings(), token };
+      saveSyncSettings(next);
+      showBanner(token ? "GitHub token saved on this device." : "GitHub token removed.");
+      if (token) scheduleCloudPush();
+    });
+
+    document.getElementById("sync-pull-btn")?.addEventListener("click", async () => {
+      await pullCloudSync({ silent: false });
+      openSyncDevicesModal();
+    });
+
+    document.getElementById("sync-push-btn")?.addEventListener("click", async () => {
+      const token = document.getElementById("sync-token")?.value.trim() || "";
+      if (token) saveSyncSettings({ ...loadSyncSettings(), token });
+      await pushCloudSync({ silent: false });
+      openSyncDevicesModal();
+    });
+
+    els.syncDevicesModal.hidden = false;
+    document.body.classList.add("add-workout-open");
+  }
+
+  function closeSyncDevicesModal() {
+    if (!els.syncDevicesModal) return;
+    els.syncDevicesModal.hidden = true;
+    document.body.classList.remove("add-workout-open");
+    if (els.syncDevicesHost) els.syncDevicesHost.innerHTML = "";
+  }
+
+  function exportBackup() {
+    const payload = buildBackupPayload();
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: "application/json;charset=utf-8",
     });
@@ -3355,7 +3609,7 @@
     state.manualPrs = [...byId.values()];
   }
 
-  function importBackup(data) {
+  function importBackup(data, { silent = false } = {}) {
     if (!data || typeof data !== "object" || data.version !== 1) {
       throw new Error("Invalid backup file.");
     }
@@ -3391,7 +3645,10 @@
     renderCoach();
     renderCalendar();
     const count = allWorkouts().length;
-    showBanner(`Backup imported. ${count} session${count === 1 ? "" : "s"} available.`);
+    renderSyncStatus();
+    if (!silent) {
+      showBanner(`Backup imported. ${count} session${count === 1 ? "" : "s"} available.`);
+    }
   }
 
   function exportCsv() {
@@ -3457,8 +3714,9 @@
   els.addWorkoutClose?.addEventListener("click", finishAddWorkout);
   els.addWorkoutBackdrop?.addEventListener("click", finishAddWorkout);
   document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape" || els.addWorkoutModal?.hidden) return;
-    finishAddWorkout();
+    if (e.key !== "Escape") return;
+    if (!els.addWorkoutModal?.hidden) finishAddWorkout();
+    else if (!els.syncDevicesModal?.hidden) closeSyncDevicesModal();
   });
 
   if (els.exportBtn) {
@@ -3499,6 +3757,10 @@
       }
     });
   }
+
+  els.syncDevicesBtn?.addEventListener("click", openSyncDevicesModal);
+  els.syncDevicesClose?.addEventListener("click", closeSyncDevicesModal);
+  els.syncDevicesBackdrop?.addEventListener("click", closeSyncDevicesModal);
 
   if (els.prsRefresh) {
     els.prsRefresh.addEventListener("click", () => {
@@ -3684,6 +3946,7 @@
   syncFormulaVisibility();
   syncAllPanels();
   syncDetailPanel();
+  await initCloudSync();
   renderPrs();
   renderStats();
   renderWorkload();
