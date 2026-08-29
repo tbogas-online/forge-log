@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-08-28T11:58:56.813Z",
+  "exportedAt": "2026-08-29T09:22:03.228Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -203,6 +203,11 @@
       "completed": true,
       "completedManual": true,
       "updatedAt": "2026-08-28T11:58:56.243Z"
+    },
+    "2026-08-19-walk": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-08-29T09:22:03.209Z"
     }
   },
   "custom": [
@@ -245,6 +250,21 @@
           "name": "CONDITIONING",
           "format": "5 Sets:",
           "content": "2` ON / 1` OFF\n200 m Run\n12 Goblet Squats\nMáximo de Double Unders no tempo restante",
+          "scoreType": "notes"
+        }
+      ]
+    },
+    {
+      "id": "2026-08-19-walk",
+      "date": "2026-08-19",
+      "type": "WALK",
+      "title": "19-08-2026 - Walk 11km",
+      "rawText": "19-08-2026 - Walk 11km",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "19-08-2026 - Walk 11km",
           "scoreType": "notes"
         }
       ]
