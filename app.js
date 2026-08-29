@@ -3340,7 +3340,7 @@
         }
 
         for (const workout of report.accepted) {
-          state.custom.push(workout);
+          adoptCustomWorkouts([workout]);
           if (completed != null) {
             state.logs[workout.id] = { ...getLog(workout.id), completed };
           }
@@ -3349,8 +3349,8 @@
       }
     }
 
-    saveLogs();
-    saveCustom();
+    saveLogs({ skipCloudPush: true });
+    saveCustom({ skipCloudPush: true });
     ensurePastDueComplete();
     ensureSeedPrs();
     renderPrs();
@@ -3362,6 +3362,7 @@
     renderCalendar();
 
     const count = allWorkouts().length;
+    syncCloudAfterLocalChange().then(() => renderSyncStatus());
     showBanner(
       `CSV imported: ${added} added, ${updated} updated${failed ? `, ${failed} skipped` : ""}. ${count} sessions available.`
     );
@@ -3463,7 +3464,26 @@
   function rememberRemoteSnapshot(data, settings = loadSyncSettings()) {
     settings.lastRemoteAt = data.exportedAt || "";
     settings.lastFingerprint = cloudFingerprint(data);
+    settings.lastRemoteCustomCount = Array.isArray(data.custom) ? data.custom.length : 0;
     saveSyncSettings(settings);
+  }
+
+  function localCustomIdsNotInRemote(remote) {
+    const remoteIds = new Set((remote?.custom || []).map((w) => w.id));
+    return state.custom.filter((w) => !remoteIds.has(w.id));
+  }
+
+  async function syncIfLocalAhead() {
+    if (!loadSyncSettings().token) return;
+    const remote = await fetchRemoteBackupData();
+    if (!remote) return;
+    const pending = localCustomIdsNotInRemote(remote);
+    if (!pending.length) return;
+    const result = await pushCloudSync({ silent: true });
+    if (result?.ok) {
+      showBanner(`Synced ${pending.length} session${pending.length === 1 ? "" : "s"} to cloud.`);
+      renderSyncStatus();
+    }
   }
 
   function remoteHasNewSessions(data, settings = loadSyncSettings()) {
@@ -3508,7 +3528,14 @@
     const count = allWorkouts().length;
     const custom = localCustomCount();
     const parts = [`${count} session${count === 1 ? "" : "s"} on this device`];
-    if (custom) parts.push(`${custom} added by you`);
+    if (custom) {
+      const cloudCustom = settings.lastRemoteCustomCount;
+      if (cloudCustom != null && custom > cloudCustom) {
+        parts.push(`${custom} added · ${cloudCustom} in cloud`);
+      } else {
+        parts.push(`${custom} added by you`);
+      }
+    }
     if (settings.lastPullAt) parts.push(`pulled ${formatSyncTime(settings.lastPullAt)}`);
     if (settings.token) {
       parts.push(settings.lastPushAt ? `uploaded ${formatSyncTime(settings.lastPushAt)}` : "not uploaded yet");
@@ -3655,14 +3682,17 @@
 
   async function initCloudSync() {
     await pullCloudSync({ silent: true });
+    await syncIfLocalAhead();
     renderSyncStatus();
-    const pullIfVisible = () => {
-      if (document.visibilityState === "visible") pullCloudSync({ silent: true });
+    const syncIfVisible = async () => {
+      if (document.visibilityState !== "visible") return;
+      await pullCloudSync({ silent: true });
+      await syncIfLocalAhead();
     };
-    document.addEventListener("visibilitychange", pullIfVisible);
-    window.addEventListener("focus", pullIfVisible);
-    window.addEventListener("pageshow", pullIfVisible);
-    window.setInterval(pullIfVisible, 30 * 1000);
+    document.addEventListener("visibilitychange", syncIfVisible);
+    window.addEventListener("focus", syncIfVisible);
+    window.addEventListener("pageshow", syncIfVisible);
+    window.setInterval(syncIfVisible, 30 * 1000);
   }
 
   function openSyncDevicesModal() {
@@ -3706,6 +3736,7 @@
     const warningEl = document.getElementById("sync-warning");
     fetchRemoteBackupData().then((remote) => {
       const remoteCustom = Array.isArray(remote?.custom) ? remote.custom.length : 0;
+      if (remote) rememberRemoteSnapshot(remote);
       const remoteEmpty =
         !remote ||
         remote.exportedAt === "1970-01-01T00:00:00.000Z" ||
@@ -3731,7 +3762,10 @@
       const next = { ...loadSyncSettings(), token };
       saveSyncSettings(next);
       showBanner(token ? "GitHub token saved on this device." : "GitHub token removed.");
-      if (token) await pullCloudSync({ silent: false, force: true });
+      if (token) {
+        await pullCloudSync({ silent: false, force: true });
+        await syncIfLocalAhead();
+      }
       openSyncDevicesModal();
     });
 
