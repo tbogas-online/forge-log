@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-09-09T18:17:37.881Z",
+  "exportedAt": "2026-10-09T12:17:10.608Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -232,6 +232,180 @@
       "rpe": "",
       "notes": "",
       "updatedAt": "2026-09-07T12:42:08.631Z"
+    },
+    "2026-09-14-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-09-17T15:49:43.590Z",
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
+    },
+    "2026-09-17-wod": {
+      "completed": true,
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": "",
+      "updatedAt": "2026-09-17T15:53:10.618Z"
+    },
+    "2026-09-16-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-09-17T15:51:49.533Z"
+    },
+    "2026-09-17-wod-2": {
+      "completed": true,
+      "completedManual": true,
+      "updatedAt": "2026-09-17T15:54:18.523Z"
+    },
+    "2029-09-18-wod": {
+      "completed": true,
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": "",
+      "updatedAt": "2026-10-09T11:03:10.506Z"
+    },
+    "2026-09-21-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:00:16.189Z",
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
+    },
+    "2026-09-22-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:06:21.008Z",
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
+    },
+    "2026-09-23-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:06:30.310Z",
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
+    },
+    "2026-09-24-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:04:06.264Z",
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
+    },
+    "2026-09-25-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:04:58.496Z",
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
+    },
+    "2026-09-26-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:06:04.425Z",
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
+    },
+    "2026-09-28-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:10:30.316Z",
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
+    },
+    "2026-09-29-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:08:42.185Z",
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
+    },
+    "2026-10-01-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:09:57.343Z"
+    },
+    "2026-10-02-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:11:09.366Z",
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
+    },
+    "2026-10-03-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:11:44.764Z"
+    },
+    "2026-10-04-run": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:15:14.521Z",
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": "",
+      "avgPace": "",
+      "elevation": ""
+    },
+    "2026-10-06-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:14:50.255Z"
+    },
+    "2026-10-07-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:15:47.933Z"
+    },
+    "2026-10-08-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-10-09T11:16:21.450Z"
+    },
+    "2026-10-09-hybrid": {
+      "completed": true,
+      "completedManual": true,
+      "updatedAt": "2026-10-09T11:17:26.596Z",
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
     }
   },
   "custom": [
@@ -359,6 +533,325 @@
           "scoreType": "reps"
         }
       ]
+    },
+    {
+      "id": "2026-09-14-wod",
+      "date": "2026-09-14",
+      "type": "WOD",
+      "title": "WOD - Strict Pull Ups",
+      "rawText": "14-09-2026\nEMOM 6'\n4-6 Weighted Strict Pull Ups\n3 Rounds:\n18/15 Cals Erg\n10 Front Squats\n50 Double Unders\n6-12 Strict HSPU\nRest 1'30''/round",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "14-09-2026\nEMOM 6'\n4-6 Weighted Strict Pull Ups\n3 Rounds:\n18/15 Cals Erg\n10 Front Squats\n50 Double Unders\n6-12 Strict HSPU\nRest 1'30''/round",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-09-17-wod",
+      "date": "2026-09-15",
+      "type": "WOD",
+      "title": "WOD + 5 Deadlifts",
+      "rawText": "Every 2' x 5 Sets:\n5 Deadlifts\n@75-80% | RPE 8 | RIR 2\nFor Time:\n500m Run\n21 Cleans @61/45kg\n500m Run\n15 Cleans @61/45kg\n500m Run\n9 Cleans @61/45kg",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "Every 2' x 5 Sets:\n5 Deadlifts\n@75-80% | RPE 8 | RIR 2\nFor Time:\n500m Run\n21 Cleans @61/45kg\n500m Run\n15 Cleans @61/45kg\n500m Run\n9 Cleans @61/45kg",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-09-16-wod",
+      "date": "2026-09-16",
+      "type": "WOD",
+      "title": "16-09-2026 - WOD + Rings hold",
+      "rawText": "16-09-2026 - WOD + Rings hold\nEvery 2'30'' x 4 Sets:\n20'' Rings hold on top\n20'' Rings hold on bottom\n5 Ring Dips\nEMOM 15'\nA: 12-15 Box Jump Overs\nB: 10 Thrusters @43/30kg\nC: 8-12 C2B Pull Ups",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "16-09-2026 - WOD + Rings hold\nEvery 2'30'' x 4 Sets:\n20'' Rings hold on top\n20'' Rings hold on bottom\n5 Ring Dips\nEMOM 15'\nA: 12-15 Box Jump Overs\nB: 10 Thrusters @43/30kg\nC: 8-12 C2B Pull Ups",
+          "scoreType": "notes"
+        }
+      ]
+    },
+    {
+      "id": "2026-09-17-wod-2",
+      "date": "2026-09-17",
+      "type": "WOD",
+      "title": "WOD + Back Squat",
+      "rawText": "WOD + Back Squat\nEvery 2' x 5 Sets:\n2 Back Squats\n@75-80% | RPE 8 | RIR 2\nAMRAP 15'\n10 Cals Erg\n10 Hang Snatch\n10 Burpees Over Bar\n10 T2B",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "WOD + Back Squat\nEvery 2' x 5 Sets:\n2 Back Squats\n@75-80% | RPE 8 | RIR 2\nAMRAP 15'\n10 Cals Erg\n10 Hang Snatch\n10 Burpees Over Bar\n10 T2B",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2029-09-18-wod",
+      "date": "2026-09-18",
+      "type": "WOD",
+      "title": "WOD Split Jerk",
+      "rawText": "18-09-2029 WOD\nEvery 2' x 5 Sets:\n2 Split Jerk\n3 Rounds, For Time:\n400m Run\n50-40-30\nDouble Unders\n8-6-4",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "18-09-2029 WOD\nEvery 2' x 5 Sets:\n2 Split Jerk\n3 Rounds, For Time:\n400m Run\n50-40-30\nDouble Unders\n8-6-4",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-09-21-wod",
+      "date": "2026-09-21",
+      "type": "WOD",
+      "title": "WOD Snatch",
+      "rawText": "21-09-2026 WOD Snatch\n\nEvery 3' x 3 Sets:\n3 Snatch\nrest 30''\n2 Snatch\nrest 30''\n1 Snatch\n4 Rounds, For Time:\n50 Double Unders\n18-15-12-9\nPower Snatch",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "21-09-2026 WOD Snatch\n\nEvery 3' x 3 Sets:\n3 Snatch\nrest 30''\n2 Snatch\nrest 30''\n1 Snatch\n4 Rounds, For Time:\n50 Double Unders\n18-15-12-9\nPower Snatch",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-09-22-wod",
+      "date": "2026-09-22",
+      "type": "WOD",
+      "title": "WOD Pull Ups",
+      "rawText": "22-09-2026 WOD Pull Ups\nEMOM 6'\n5-7 Weighted Strict Pull Ups\n5 Sets:\n2' ON - 1' OFF\n10 2DB Thrusters\n10 Pull Ups\nMax Burpee Box Jump Overs",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "22-09-2026 WOD Pull Ups\nEMOM 6'\n5-7 Weighted Strict Pull Ups\n5 Sets:\n2' ON - 1' OFF\n10 2DB Thrusters\n10 Pull Ups\nMax Burpee Box Jump Overs",
+          "scoreType": "reps"
+        }
+      ]
+    },
+    {
+      "id": "2026-09-23-wod",
+      "date": "2026-09-23",
+      "type": "WOD",
+      "title": "23-09-2026 WOD Deadlift",
+      "rawText": "23-09-2026 WOD Deadlift\nEvery 2' x 5 Sets:\n5 Deadlifts\n@75-80% | RPE 8 | RIR 2\n2 Sets:\nAMRAP 5'\n10 Cals Erg\n10 T2B\n6 Power Clean & Jerks\nRest 2'/Set",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "23-09-2026 WOD Deadlift\nEvery 2' x 5 Sets:\n5 Deadlifts\n@75-80% | RPE 8 | RIR 2\n2 Sets:\nAMRAP 5'\n10 Cals Erg\n10 T2B\n6 Power Clean & Jerks\nRest 2'/Set",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-09-24-wod",
+      "date": "2026-09-24",
+      "type": "WOD",
+      "title": "WOD Rings",
+      "rawText": "24-09-2026 WOD Rings\n\nEvery 2'30'' x 4 Sets:\n5 Ring Dips\n20'' Rings hold on top\n5 Ring Dips\n20'' Rings hold on bottom\nFor Time:\n40-30-20\nCals Erg\nBox Jumps\n20-15-10\nBMU or C2B Pull Ups",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "24-09-2026 WOD Rings\n\nEvery 2'30'' x 4 Sets:\n5 Ring Dips\n20'' Rings hold on top\n5 Ring Dips\n20'' Rings hold on bottom\nFor Time:\n40-30-20\nCals Erg\nBox Jumps\n20-15-10\nBMU or C2B Pull Ups",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-09-25-wod",
+      "date": "2026-09-25",
+      "type": "WOD",
+      "title": "WOD BackSquat",
+      "rawText": "25-09-2026 WOD BackSquat\n10' Running clock\nBuild 1RM Back Squat\nAMRAP 12'\n1 Wall Walk\n3 Burpees Over Bar\n5 Front Squats",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "25-09-2026 WOD BackSquat\n10' Running clock\nBuild 1RM Back Squat\nAMRAP 12'\n1 Wall Walk\n3 Burpees Over Bar\n5 Front Squats",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-09-26-wod",
+      "date": "2026-09-26",
+      "type": "WOD",
+      "title": "WOD Partner",
+      "rawText": "26-09-2026\nWOD Partner\nAMRAP 12’\n21 Deadlift\n15 Hang Cleans\n9 STOH\n\nRest 4’\n\nAMRAP 12’\n20 2DB Front Rack Reverse Lunge\n20 Burpees Over the DB\n20 T2B",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "26-09-2026\nWOD Partner\nAMRAP 12’\n21 Deadlift\n15 Hang Cleans\n9 STOH\n\nRest 4’\n\nAMRAP 12’\n20 2DB Front Rack Reverse Lunge\n20 Burpees Over the DB\n20 T2B",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-09-28-wod",
+      "date": "2026-09-28",
+      "type": "WOD",
+      "title": "28-09-2026 WOD Push Jerk",
+      "rawText": "28/09/2026\nWOD Push Jerk\nEvery 1'30'' x 8 Sets:\nBuild to Heavy Split Jerk\n4 Sets:\n2'30'' ON - 1' OFF\n200m Run\n6 Push Jerks\nMax Bar Muscle Ups in remaining time",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "28/09/2026\nWOD Push Jerk\nEvery 1'30'' x 8 Sets:\nBuild to Heavy Split Jerk\n4 Sets:\n2'30'' ON - 1' OFF\n200m Run\n6 Push Jerks\nMax Bar Muscle Ups in remaining time",
+          "scoreType": "reps"
+        }
+      ]
+    },
+    {
+      "id": "2026-09-29-wod",
+      "date": "2026-09-29",
+      "type": "WOD",
+      "title": "29/09/2026 WOD Cleans",
+      "rawText": "29/09/2026 WOD Cleans\n\nEvery 3' x 3 Sets:\n3 Cleans\nrest 30''\n2 Cleans\nrest 30''\n1 Clean\nFOR TIME:\n30-20-10\nPower Cleans\nBurpees Over Bar Sync.\n60-40-20\nToes to Bar\n\nEvery Round, increase weight\nM - 25kg - 35kg - 45kg\nH - 50kg - 60kg - 70kg",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "29/09/2026 WOD Cleans\n\nEvery 3' x 3 Sets:\n3 Cleans\nrest 30''\n2 Cleans\nrest 30''\n1 Clean\nFOR TIME:\n30-20-10\nPower Cleans\nBurpees Over Bar Sync.\n60-40-20\nToes to Bar\n\nEvery Round, increase weight\nM - 25kg - 35kg - 45kg\nH - 50kg - 60kg - 70kg",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-01-wod",
+      "date": "2026-10-01",
+      "type": "WOD",
+      "title": "01-10-2026 WOD Deadlift",
+      "rawText": "01-10-2026 WOD Deadlift \n\n10' Running clock\nBuild 1RM Deadlift\n4 Sets:\nAMRAP 3'\n2 Wall Walks\n4 Heavy DB Snatch\n6 Burpees Over DB\nRest 1'/set\n\nPR 130 dealift",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "01-10-2026 WOD Deadlift \n\n10' Running clock\nBuild 1RM Deadlift\n4 Sets:\nAMRAP 3'\n2 Wall Walks\n4 Heavy DB Snatch\n6 Burpees Over DB\nRest 1'/set\n\nPR 130 dealift",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-02-wod",
+      "date": "2026-10-02",
+      "type": "WOD",
+      "title": "02-10-2026 WOD",
+      "rawText": "02-10-2026 WOD \n8 Sets:\n4' ON - 1' OFF\n\nA:\n8 Shuttle Box Jump Overs\n16 KB Swings\n\nB:\n8/6 Cals Erg\n16 Wallballs\n\nC:\n40 Double Unders\n16 DB OH Reverse Lunges\n\nD:\n100m Run\n8 Devil Presses",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "02-10-2026 WOD \n8 Sets:\n4' ON - 1' OFF\n\nA:\n8 Shuttle Box Jump Overs\n16 KB Swings\n\nB:\n8/6 Cals Erg\n16 Wallballs\n\nC:\n40 Double Unders\n16 DB OH Reverse Lunges\n\nD:\n100m Run\n8 Devil Presses",
+          "scoreType": "notes"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-03-wod",
+      "date": "2026-10-03",
+      "type": "WOD",
+      "title": "03-10-2026 WOD Partner",
+      "rawText": "03-10-2026 WOD Partner\nFOR TIME:\n150 cals Erg ( Split)\n140 DB Push Press (Split)\n130 T2ring (Split)\n120 DB Hang Cleans (Split)\n110 Wallballs (Split)\n1000m Run Together",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "03-10-2026 WOD Partner\nFOR TIME:\n150 cals Erg ( Split)\n140 DB Push Press (Split)\n130 T2ring (Split)\n120 DB Hang Cleans (Split)\n110 Wallballs (Split)\n1000m Run Together",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-04-run",
+      "date": "2026-10-04",
+      "type": "RUN",
+      "title": "04-10-2026 Run 6k",
+      "rawText": "Run 2026-10-04 08:38:54 HUAWEI WATCH GT 4\n\nDistance\n6.04 km\nPace\n6:03 /km\nTime\n36m 35s",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "Run 2026-10-04 08:38:54 HUAWEI WATCH GT 4\n\nDistance\n6.04 km\nPace\n6:03 /km\nTime\n36m 35s",
+          "scoreType": "notes"
+        }
+      ],
+      "activity": {
+        "duration": "",
+        "elevationM": 0
+      }
+    },
+    {
+      "id": "2026-10-06-wod",
+      "date": "2026-10-06",
+      "type": "WOD",
+      "title": "06-10-2026 WOD Front Squat",
+      "rawText": "06-10-2026 WOD Front Squat\nEvery 2'30'' x 4 Sets:\n8-8-7-7\nFront Squats\n3 Sets:\n4' AMRAP - 1' Rest\n6 Cals Erg\n4 2DB Thrusters\n2 Sandbag/Slamball Cleans",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "06-10-2026 WOD Front Squat\nEvery 2'30'' x 4 Sets:\n8-8-7-7\nFront Squats\n3 Sets:\n4' AMRAP - 1' Rest\n6 Cals Erg\n4 2DB Thrusters\n2 Sandbag/Slamball Cleans",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-07-wod",
+      "date": "2026-10-07",
+      "type": "WOD",
+      "title": "07-10-2026 WOD Rope Climbs",
+      "rawText": "07-10-2026 WOD Rope Climbs\n3 Super-Sets:\n12 2DB Bench Press\nMax Push Ups unbroken\nRest 1'30''/set\n\n3 Super Sets:\n12 BB Bent Over Row\nMax Ring Rows unbroken\nRest 1'30''/set\nAMRAP 10'\n1-2-3-4-5-6-7...\nRope Climbs\n10-20-30-40-50-60-70...\nDouble Unders",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "07-10-2026 WOD Rope Climbs\n3 Super-Sets:\n12 2DB Bench Press\nMax Push Ups unbroken\nRest 1'30''/set\n\n3 Super Sets:\n12 BB Bent Over Row\nMax Ring Rows unbroken\nRest 1'30''/set\nAMRAP 10'\n1-2-3-4-5-6-7...\nRope Climbs\n10-20-30-40-50-60-70...\nDouble Unders",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-08-wod",
+      "date": "2026-10-08",
+      "type": "WOD",
+      "title": "08-10-2026 WOD Clean&Jerk",
+      "rawText": "08-10-2026 WOD Clean&Jerk\nEvery 1'30'' x 8 Sets:\n3 Clean & Jerks\n@RPE 8 | @75-80%\n3 Rounds, For Time:\n400m Run\n12 2DB Hang Clean & Jerks\n15 Toes to Bar\nRest 1'30''/round",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "08-10-2026 WOD Clean&Jerk\nEvery 1'30'' x 8 Sets:\n3 Clean & Jerks\n@RPE 8 | @75-80%\n3 Rounds, For Time:\n400m Run\n12 2DB Hang Clean & Jerks\n15 Toes to Bar\nRest 1'30''/round",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-09-hybrid",
+      "date": "2026-10-09",
+      "type": "HYBRID",
+      "title": "09-10-2026 Hybrid",
+      "rawText": "09-10-2026 Hybrid\n5 Rounds, For Time:\n20 Box Jumps Overs\n15/12 Cals Erg\n20 KB Swings\n10 Devil Presses\nRest 1'/round",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "09-10-2026 Hybrid\n5 Rounds, For Time:\n20 Box Jumps Overs\n15/12 Cals Erg\n20 KB Swings\n10 Devil Presses\nRest 1'/round",
+          "scoreType": "time"
+        }
+      ]
     }
   ],
   "overrides": {},
@@ -398,10 +891,68 @@
       "date": "2026-08-05",
       "weightKg": 95,
       "source": "manual"
+    },
+    {
+      "id": "manual-1789660508213",
+      "exerciseId": "back-squat",
+      "name": "Back Squat",
+      "kind": "lift",
+      "date": "2026-09-17",
+      "weightKg": 110,
+      "source": "manual"
+    },
+    {
+      "id": "manual-1789660566322",
+      "exerciseId": "deadlift",
+      "name": "Deadlift",
+      "kind": "lift",
+      "date": "2026-09-17",
+      "weightKg": 110,
+      "source": "manual"
+    },
+    {
+      "id": "manual-1791544727427",
+      "exerciseId": "deadlift",
+      "name": "Deadlift",
+      "kind": "lift",
+      "date": "2026-10-01",
+      "weightKg": 140,
+      "source": "manual"
+    },
+    {
+      "id": "manual-1791544773152",
+      "exerciseId": "deadlift",
+      "name": "Deadlift",
+      "kind": "lift",
+      "date": "2026-10-09",
+      "weightKg": 120,
+      "source": "manual"
     }
   ],
   "coachFeedback": {
-    "kinds": {},
-    "suggestionTypes": {}
+    "kinds": {
+      "suggestion": {
+        "up": 2,
+        "down": 0
+      },
+      "volume": {
+        "up": 1,
+        "down": 0
+      },
+      "progress": {
+        "up": 1,
+        "down": 0
+      }
+    },
+    "suggestionTypes": {
+      "FBB": {
+        "up": 1,
+        "down": 0
+      },
+      "RUN": {
+        "up": 1,
+        "down": 0
+      }
+    }
   }
 }
