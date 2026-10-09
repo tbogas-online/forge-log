@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-10-09T12:35:39.413Z",
+  "exportedAt": "2026-10-09T12:36:59.353Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -162,6 +162,12 @@
       "completedAuto": true,
       "updatedAt": "2026-08-28T10:56:12.075Z"
     },
+    "2026-08-28-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-08-28T10:54:45.514Z",
+      "completedManual": true
+    },
     "2026-03-22-walk": {
       "completed": true,
       "completedAuto": true,
@@ -176,11 +182,6 @@
       "completed": true,
       "completedAuto": true,
       "updatedAt": "2026-08-28T09:39:30.254Z"
-    },
-    "2026-08-28-wod": {
-      "completed": true,
-      "completedManual": true,
-      "updatedAt": "2026-08-28T10:54:45.514Z"
     },
     "2026-08-17-wod": {
       "completed": true,
@@ -417,7 +418,10 @@
       "notes": ""
     },
     "2026-10-09-wod-2": {
-      "updatedAt": "2026-10-09T12:35:38.615Z"
+      "updatedAt": "2026-10-09T12:36:11.245Z",
+      "deleted": true,
+      "completed": true,
+      "completedManual": true
     }
   },
   "custom": [
@@ -877,21 +881,6 @@
           "name": "WORKOUT",
           "content": "09-10-2026 - WOD Partner\n\nFor time 30’\n10 G2OH Sync (DB/Plate)\n20 Burpees Over DB/Plate Sync\n30 Thrusters Sync (DB/Plate)\n40 KB Swing\n50 Sit Ups\n200 Double Unders\n50 Sit Ups\n40 KB Swing\n30 Thrusters Sync (DB/Plate)\n20 Burpees Over DB/Plate Sync\n10 G2OH Sync (DB/Plate)",
           "scoreType": "time"
-        }
-      ]
-    },
-    {
-      "id": "2026-10-09-wod-2",
-      "date": "2026-10-09",
-      "type": "WOD",
-      "title": "teste",
-      "rawText": "teste",
-      "custom": true,
-      "sections": [
-        {
-          "name": "WORKOUT",
-          "content": "teste",
-          "scoreType": "notes"
         }
       ]
     }
