@@ -3534,7 +3534,6 @@
 
   async function syncIfLocalAhead() {
     if (!loadSyncSettings().token) return;
-    if (syncInFlight) return;
     const remote = await fetchRemoteBackupData();
     if (!remote) return;
     const pending = localCustomIdsNotInRemote(remote);
@@ -3573,10 +3572,9 @@
   async function fetchRemoteBackupData() {
     const settings = loadSyncSettings();
     const { owner, repo, branch } = syncRepoParts(settings);
-    const headers = {
-      Accept: "application/vnd.github.raw+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-    };
+    // Keep headers CORS-simple. Custom Accept / X-GitHub-Api-Version can fail
+    // preflight in mobile browsers and silently fall back to a stale CDN copy.
+    const headers = { Accept: "application/json" };
     if (settings.token) headers.Authorization = `Bearer ${settings.token}`;
 
     try {
@@ -3587,8 +3585,18 @@
       if (apiRes.ok) {
         const text = await apiRes.text();
         try {
-          const parsed = parseSyncPayload(JSON.parse(text));
+          const meta = JSON.parse(text);
+          const parsed = parseSyncPayload(meta);
           if (parsed) return parsed;
+          if (meta?.download_url) {
+            const dl = await fetch(`${meta.download_url}${meta.download_url.includes("?") ? "&" : "?"}t=${Date.now()}`, {
+              cache: "no-store",
+            });
+            if (dl.ok) {
+              const fromDl = parseSyncPayload(await dl.json());
+              if (fromDl) return fromDl;
+            }
+          }
         } catch {
           /* fall through */
         }
@@ -3597,14 +3605,21 @@
       /* fall back to raw URL */
     }
 
-    const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${SYNC_FILE_PATH}?t=${Date.now()}`;
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) return null;
-    try {
-      return parseSyncPayload(await res.json());
-    } catch {
-      return null;
+    const candidates = [
+      `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${SYNC_FILE_PATH}?t=${Date.now()}`,
+      `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${SYNC_FILE_PATH}?t=${Date.now()}`,
+    ];
+    for (const url of candidates) {
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) continue;
+        const parsed = parseSyncPayload(await res.json());
+        if (parsed) return parsed;
+      } catch {
+        /* try next */
+      }
     }
+    return null;
   }
 
   function renderSyncStatus() {
@@ -3631,7 +3646,16 @@
   }
 
   let cloudPushTimer = null;
-  let syncInFlight = false;
+  let syncChain = Promise.resolve();
+
+  function withSyncLock(fn) {
+    const run = syncChain.then(fn, fn);
+    syncChain = run.then(
+      () => undefined,
+      () => undefined
+    );
+    return run;
+  }
 
   function scheduleCloudPush({ immediate = false } = {}) {
     if (!loadSyncSettings().token) return;
@@ -3651,53 +3675,79 @@
   }
 
   async function pullCloudSync({ silent = true, force = false } = {}) {
-    if (syncInFlight) return { ok: false, reason: "busy" };
-    syncInFlight = true;
-    try {
-      const settings = loadSyncSettings();
-      const data = await fetchRemoteBackupData();
-      if (!data) return { ok: false, reason: "missing" };
+    return withSyncLock(async () => {
+      try {
+        const settings = loadSyncSettings();
+        const data = await fetchRemoteBackupData();
+        if (!data) {
+          if (!silent) showBanner("Could not download cloud backup.", true);
+          return { ok: false, reason: "missing" };
+        }
 
-      const missing = remoteCustomIdsMissingLocally(data).length;
-      const shouldImport = force || remoteHasNewSessions(data, settings) || missing > 0;
+        const missingBefore = remoteCustomIdsMissingLocally(data).length;
+        const shouldImport =
+          force || remoteHasNewSessions(data, settings) || missingBefore > 0;
 
-      if (!shouldImport) {
+        if (!shouldImport) {
+          settings.lastPullAt = new Date().toISOString();
+          noteRemoteCustomCount(data, settings);
+          if (!silent) {
+            showBanner(
+              `Cloud sync is up to date · ${data.custom?.length || 0} added sessions in cloud.`
+            );
+          }
+          return { ok: true, changed: false, added: 0 };
+        }
+
+        // Force pull: revive cloud sessions that only this device had tombstoned.
+        if (force) {
+          for (const workout of data.custom || []) {
+            if (!workout?.id) continue;
+            if (state.logs[workout.id]?.deleted && !data.logs?.[workout.id]?.deleted) {
+              clearDeletedTombstone(workout.id);
+            }
+          }
+        }
+
+        const before = allWorkouts().length;
+        const beforeCustom = state.custom.length;
+        importBackup(data, { silent: true, skipCloudPush: true });
+        const after = allWorkouts().length;
+        const afterCustom = state.custom.length;
+        const added = Math.max(0, after - before, afterCustom - beforeCustom);
+        const removed = Math.max(0, before - after);
+        const stillMissing = remoteCustomIdsMissingLocally(data).length;
         settings.lastPullAt = new Date().toISOString();
-        noteRemoteCustomCount(data, settings);
-        if (!silent) showBanner("Cloud sync is up to date.");
-        return { ok: true, changed: false, added: 0 };
-      }
+        rememberRemoteSnapshot(data, settings);
 
-      const before = allWorkouts().length;
-      const beforeCustom = state.custom.length;
-      importBackup(data, { silent: true, skipCloudPush: true });
-      const after = allWorkouts().length;
-      const afterCustom = state.custom.length;
-      const added = Math.max(0, after - before, afterCustom - beforeCustom);
-      const removed = Math.max(0, before - after);
-      settings.lastPullAt = new Date().toISOString();
-      rememberRemoteSnapshot(data, settings);
-
-      if (!silent) {
-        if (added > 0) {
-          showBanner(`Synced ${added} new session${added === 1 ? "" : "s"} from cloud.`);
+        if (!silent) {
+          if (added > 0) {
+            showBanner(
+              `Synced ${added} session${added === 1 ? "" : "s"} from cloud · ${afterCustom} added on this device.`
+            );
+          } else if (stillMissing > 0) {
+            showBanner(
+              `Pull finished but ${stillMissing} cloud session${stillMissing === 1 ? "" : "s"} still missing locally.`,
+              true
+            );
+          } else if (removed > 0) {
+            showBanner(`Removed ${removed} session${removed === 1 ? "" : "s"} from cloud sync.`);
+          } else {
+            showBanner(
+              `Cloud sync is up to date · ${data.custom?.length || 0} added sessions in cloud.`
+            );
+          }
+        } else if (added > 0) {
+          showBanner(`Synced ${added} session${added === 1 ? "" : "s"} from cloud.`);
         } else if (removed > 0) {
           showBanner(`Removed ${removed} session${removed === 1 ? "" : "s"} from cloud sync.`);
-        } else {
-          showBanner("Cloud sync is up to date.");
         }
-      } else if (added > 0) {
-        showBanner(`Synced ${added} session${added === 1 ? "" : "s"} from cloud.`);
-      } else if (removed > 0) {
-        showBanner(`Removed ${removed} session${removed === 1 ? "" : "s"} from cloud sync.`);
+        return { ok: true, changed: added > 0 || removed > 0, added, removed };
+      } catch {
+        if (!silent) showBanner("Could not download cloud backup.", true);
+        return { ok: false, reason: "error" };
       }
-      return { ok: true, changed: added > 0 || removed > 0, added, removed };
-    } catch {
-      if (!silent) showBanner("Could not download cloud backup.", true);
-      return { ok: false, reason: "error" };
-    } finally {
-      syncInFlight = false;
-    }
+    });
   }
 
   async function pushCloudSync({ silent = false } = {}) {
@@ -3706,15 +3756,13 @@
       if (!silent) showBanner("Add a GitHub token in Sync devices to upload changes.", true);
       return { ok: false, reason: "no-token" };
     }
-    if (syncInFlight) return { ok: false, reason: "busy" };
-    syncInFlight = true;
 
+    return withSyncLock(async () => {
     try {
       const { owner, repo, branch } = syncRepoParts(settings);
       const headers = {
         Authorization: `Bearer ${settings.token}`,
-        Accept: "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
+        Accept: "application/json",
       };
 
       let sha;
@@ -3781,9 +3829,8 @@
         );
       }
       return { ok: false, reason: "error" };
-    } finally {
-      syncInFlight = false;
     }
+    });
   }
 
   async function initCloudSync() {
@@ -3879,7 +3926,19 @@
     });
 
     document.getElementById("sync-pull-btn")?.addEventListener("click", async () => {
-      await pullCloudSync({ silent: false, force: true });
+      const btn = document.getElementById("sync-pull-btn");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Pulling…";
+      }
+      const result = await pullCloudSync({ silent: false, force: true });
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Pull now";
+      }
+      if (result?.ok === false && result.reason === "missing") {
+        showBanner("Pull failed — could not reach cloud backup.", true);
+      }
       openSyncDevicesModal();
     });
 
