@@ -70,6 +70,20 @@ body {
   animation: rise 0.55s ease both;
 }
 
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.brand-mark {
+  width: clamp(2.4rem, 6vw, 3.1rem);
+  height: clamp(2.4rem, 6vw, 3.1rem);
+  border-radius: 12px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
 .brand {
   font-family: var(--font-display);
   font-size: clamp(3rem, 8vw, 4.5rem);

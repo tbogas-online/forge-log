@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#12140f" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Forge Log" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Forge Log — Workout Tracker</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.jpg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,7 +23,10 @@
     <div class="app">
       <header class="top">
         <div class="brand-block">
-          <p class="brand">Forge Log</p>
+          <div class="brand-row">
+            <img class="brand-mark" src="favicon.svg" width="44" height="44" alt="" />
+            <p class="brand">Forge Log</p>
+          </div>
           <p class="tagline">Track every WOD, Hybrid, FBB &amp; Run</p>
         </div>
         <div class="stats" id="stats" aria-label="Training summary"></div>
