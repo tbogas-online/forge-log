@@ -1239,6 +1239,9 @@ body {
 
 .filter {
   appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   border: 1px solid var(--line);
   background: transparent;
   color: var(--muted);
@@ -1247,6 +1250,22 @@ body {
   border-radius: 999px;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.type-icon {
+  width: 0.9em;
+  height: 0.9em;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.type-icon.is-solid {
+  fill: currentColor;
+  stroke: none;
 }
 
 .filter:hover {
@@ -1675,6 +1694,9 @@ body.add-workout-open {
 }
 
 .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1682,6 +1704,11 @@ body.add-workout-open {
   padding: 0.2rem 0.45rem;
   border-radius: 999px;
   border: 1px solid currentColor;
+}
+
+.badge .type-icon {
+  width: 0.85em;
+  height: 0.85em;
 }
 
 .badge.wod {

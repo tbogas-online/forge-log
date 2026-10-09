@@ -459,6 +459,33 @@
     return type.toLowerCase();
   }
 
+  function typeIconSvg(type) {
+    const key = String(type || "").toUpperCase();
+    const solid = new Set(["ALL", "HIT", "OTHER"]);
+    const paths = {
+      ALL: '<path d="M3 3h4v4H3zm6 0h4v4H9zM3 9h4v4H3zm6 0h4v4H9z"/>',
+      WOD: '<path d="M2 8h12M4 5.5v5M12 5.5v5M5.5 6.5v3M10.5 6.5v3"/>',
+      HYBRID:
+        '<circle cx="5.5" cy="8" r="2.5"/><path d="M8 8h6M11 5.5v5M13.5 6.5v3"/>',
+      FBB: '<path d="M3 8h10M5 6v4M11 6v4M6.5 7v2M9.5 7v2"/>',
+      RUN: '<path d="M3 11c2-3 3.5-4 5-4s3 1 5 4"/><path d="M9 4.5l1.2 1.2L12 4"/>',
+      WALK:
+        '<ellipse cx="5.5" cy="6" rx="1.6" ry="2.2" transform="rotate(-18 5.5 6)"/><ellipse cx="10.5" cy="10" rx="1.6" ry="2.2" transform="rotate(-18 10.5 10)"/>',
+      HIT: '<path d="M9 2L4 9h4l-1 5 5-7H8l1-5z"/>',
+      OTHER:
+        '<circle cx="4" cy="8" r="1.1"/><circle cx="8" cy="8" r="1.1"/><circle cx="12" cy="8" r="1.1"/>',
+      LOGGED: '<path d="M3.5 8.2l2.8 2.8 6.2-6.2"/>',
+    };
+    const body = paths[key] || paths.OTHER;
+    const solidClass = solid.has(key) || (!paths[key] && solid.has("OTHER")) ? " is-solid" : "";
+    return `<svg class="type-icon${solidClass}" viewBox="0 0 16 16" aria-hidden="true">${body}</svg>`;
+  }
+
+  function typeBadgeHtml(type) {
+    const label = escapeHtml(type || "OTHER");
+    return `<span class="badge ${badgeClass(type)}">${typeIconSvg(type)}${label}</span>`;
+  }
+
   function sessionLoad(workout) {
     const base = LOAD_WEIGHTS[workout.type] ?? 1;
     if (workout.type === "RUN" || workout.type === "WALK") {
@@ -951,7 +978,7 @@
         return `
           <li class="chart-balloon-item" data-session-id="${escapeAttr(item.id)}">
             <div class="chart-balloon-row">
-              <span class="badge ${badgeClass(item.type)}">${item.type}</span>
+              ${typeBadgeHtml(item.type)}
               <span class="title">${escapeHtml(title || item.title)}</span>
               <button type="button" class="balloon-plus" data-expand="${escapeAttr(item.id)}" aria-expanded="false" aria-label="Show session details">+</button>
             </div>
@@ -2097,7 +2124,7 @@
               <button class="workout-item ${selected} ${logged}" data-id="${w.id}" type="button" title="Double-click to open details">
                 <div class="meta-row">
                   <span class="date">${formatDate(w.date)}</span>
-                  <span class="badge ${badgeClass(w.type)}">${w.type}</span>
+                  ${typeBadgeHtml(w.type)}
                 </div>
                 <div class="title">${escapeHtml(w.title)}</div>
                 ${preview}
@@ -2241,7 +2268,7 @@
               ? `<ul class="report-list">${added
                   .map(
                     (w) =>
-                      `<li><span class="badge ${badgeClass(w.type)}">${w.type}</span><span>${escapeHtml(entryLabel(w))}</span></li>`
+                      `<li>${typeBadgeHtml(w.type)}<span>${escapeHtml(entryLabel(w))}</span></li>`
                   )
                   .join("")}</ul>`
               : `<p class="report-empty">No workouts were added.</p>`
@@ -2840,7 +2867,7 @@
       <form class="session-log-form" id="session-log-form">
         <div class="detail-header">
           <div class="meta-row">
-            <span class="badge ${badgeClass(workout.type)}" id="session-type-badge">${workout.type}</span>
+            <span class="badge ${badgeClass(workout.type)}" id="session-type-badge">${typeIconSvg(workout.type)}${escapeHtml(workout.type)}</span>
             ${openPill}
           </div>
         </div>
@@ -2961,8 +2988,8 @@
       const isActivity = isActivityType(sessionTypeEl.value);
       sessionActivityFields.hidden = !isActivity;
       if (sessionTypeBadge) {
-        sessionTypeBadge.textContent = sessionTypeEl.value;
         sessionTypeBadge.className = `badge ${badgeClass(sessionTypeEl.value)}`;
+        sessionTypeBadge.innerHTML = `${typeIconSvg(sessionTypeEl.value)}${escapeHtml(sessionTypeEl.value)}`;
       }
     }
 
