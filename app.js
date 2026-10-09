@@ -1448,13 +1448,20 @@
   }
 
   function clearDeletedTombstone(id) {
-    if (id && state.logs[id]?.deleted) delete state.logs[id];
+    if (!id || !state.logs[id]?.deleted) return;
+    const prev = { ...state.logs[id] };
+    delete prev.deleted;
+    // Keep an alive log with a fresh timestamp so cloud delete tombstones lose the merge.
+    state.logs[id] = { ...prev, updatedAt: new Date().toISOString() };
   }
 
   function adoptCustomWorkouts(entries) {
     for (const entry of entries || []) {
       if (!entry?.id) continue;
       clearDeletedTombstone(entry.id);
+      const prev = state.logs[entry.id] || {};
+      state.logs[entry.id] = { ...prev, updatedAt: new Date().toISOString() };
+      delete state.logs[entry.id].deleted;
       const idx = state.custom.findIndex((w) => w.id === entry.id);
       if (idx >= 0) state.custom[idx] = entry;
       else state.custom.push(entry);
@@ -3436,8 +3443,21 @@
       if (localEntry.deleted || remoteEntry.deleted) {
         const localAt = new Date(localEntry.updatedAt || 0).getTime();
         const remoteAt = new Date(remoteEntry.updatedAt || 0).getTime();
-        const winner = remoteAt >= localAt ? remoteEntry : localEntry;
-        merged[id] = { ...winner, deleted: true };
+        // Newer side wins for delete vs re-add. Never force deleted when the newer entry is alive.
+        if (remoteAt > localAt) {
+          merged[id] = { ...localEntry, ...remoteEntry };
+          if (remoteEntry.deleted) merged[id].deleted = true;
+          else delete merged[id].deleted;
+        } else if (localAt > remoteAt) {
+          merged[id] = { ...remoteEntry, ...localEntry };
+          if (localEntry.deleted) merged[id].deleted = true;
+          else delete merged[id].deleted;
+        } else if (localEntry.deleted && remoteEntry.deleted) {
+          merged[id] = { ...localEntry, ...remoteEntry, deleted: true };
+        } else {
+          merged[id] = { ...localEntry, ...remoteEntry };
+          delete merged[id].deleted;
+        }
         continue;
       }
       merged[id] = { ...localEntry, ...remoteEntry };
@@ -3468,13 +3488,26 @@
     saveSyncSettings(settings);
   }
 
+  function noteRemoteCustomCount(data, settings = loadSyncSettings()) {
+    settings.lastRemoteCustomCount = Array.isArray(data?.custom) ? data.custom.length : 0;
+    saveSyncSettings(settings);
+  }
+
   function localCustomIdsNotInRemote(remote) {
     const remoteIds = new Set((remote?.custom || []).map((w) => w.id));
     return state.custom.filter((w) => !remoteIds.has(w.id));
   }
 
+  function remoteCustomIdsMissingLocally(remote) {
+    const localIds = new Set(state.custom.map((w) => w.id));
+    return (remote?.custom || []).filter(
+      (w) => w?.id && !localIds.has(w.id) && !state.logs[w.id]?.deleted
+    );
+  }
+
   async function syncIfLocalAhead() {
     if (!loadSyncSettings().token) return;
+    if (syncInFlight) return;
     const remote = await fetchRemoteBackupData();
     if (!remote) return;
     const pending = localCustomIdsNotInRemote(remote);
@@ -3489,7 +3522,25 @@
   function remoteHasNewSessions(data, settings = loadSyncSettings()) {
     if (!data) return false;
     if (!settings.lastFingerprint) return true;
-    return cloudFingerprint(data) !== settings.lastFingerprint;
+    if (cloudFingerprint(data) !== settings.lastFingerprint) return true;
+    // Fingerprint can be stale if the Sync modal inspected cloud without importing.
+    return remoteCustomIdsMissingLocally(data).length > 0;
+  }
+
+  function parseSyncPayload(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    if (raw.version === 1) return raw;
+    if (raw.encoding === "base64" && typeof raw.content === "string") {
+      try {
+        const binary = atob(raw.content.replace(/\n/g, ""));
+        const bytes = Uint8Array.from(binary, (ch) => ch.charCodeAt(0));
+        const parsed = JSON.parse(new TextDecoder().decode(bytes));
+        return parsed?.version === 1 ? parsed : null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
   }
 
   async function fetchRemoteBackupData() {
@@ -3507,8 +3558,13 @@
         { cache: "no-store", headers }
       );
       if (apiRes.ok) {
-        const data = await apiRes.json();
-        if (data && data.version === 1) return data;
+        const text = await apiRes.text();
+        try {
+          const parsed = parseSyncPayload(JSON.parse(text));
+          if (parsed) return parsed;
+        } catch {
+          /* fall through */
+        }
       }
     } catch {
       /* fall back to raw URL */
@@ -3517,9 +3573,11 @@
     const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${SYNC_FILE_PATH}?t=${Date.now()}`;
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) return null;
-    const data = await res.json();
-    if (!data || data.version !== 1) return null;
-    return data;
+    try {
+      return parseSyncPayload(await res.json());
+    } catch {
+      return null;
+    }
   }
 
   function renderSyncStatus() {
@@ -3546,6 +3604,8 @@
   }
 
   let cloudPushTimer = null;
+  let syncInFlight = false;
+
   function scheduleCloudPush({ immediate = false } = {}) {
     if (!loadSyncSettings().token) return;
     clearTimeout(cloudPushTimer);
@@ -3559,25 +3619,34 @@
     return pushCloudSync({ silent: true });
   }
 
+  function isAddWorkoutOpen() {
+    return Boolean(els.addWorkoutModal && !els.addWorkoutModal.hidden);
+  }
+
   async function pullCloudSync({ silent = true, force = false } = {}) {
+    if (syncInFlight) return { ok: false, reason: "busy" };
+    syncInFlight = true;
     try {
       const settings = loadSyncSettings();
       const data = await fetchRemoteBackupData();
       if (!data) return { ok: false, reason: "missing" };
 
-      const shouldImport = force || remoteHasNewSessions(data, settings);
+      const missing = remoteCustomIdsMissingLocally(data).length;
+      const shouldImport = force || remoteHasNewSessions(data, settings) || missing > 0;
 
       if (!shouldImport) {
         settings.lastPullAt = new Date().toISOString();
-        saveSyncSettings(settings);
+        noteRemoteCustomCount(data, settings);
         if (!silent) showBanner("Cloud sync is up to date.");
         return { ok: true, changed: false, added: 0 };
       }
 
       const before = allWorkouts().length;
+      const beforeCustom = state.custom.length;
       importBackup(data, { silent: true, skipCloudPush: true });
       const after = allWorkouts().length;
-      const added = Math.max(0, after - before);
+      const afterCustom = state.custom.length;
+      const added = Math.max(0, after - before, afterCustom - beforeCustom);
       const removed = Math.max(0, before - after);
       settings.lastPullAt = new Date().toISOString();
       rememberRemoteSnapshot(data, settings);
@@ -3599,13 +3668,9 @@
     } catch {
       if (!silent) showBanner("Could not download cloud backup.", true);
       return { ok: false, reason: "error" };
+    } finally {
+      syncInFlight = false;
     }
-  }
-
-  async function mergeRemoteBeforePush() {
-    const remote = await fetchRemoteBackupData();
-    if (!remote) return;
-    importBackup(remote, { silent: true, skipCloudPush: true });
   }
 
   async function pushCloudSync({ silent = false } = {}) {
@@ -3614,12 +3679,11 @@
       if (!silent) showBanner("Add a GitHub token in Sync devices to upload changes.", true);
       return { ok: false, reason: "no-token" };
     }
+    if (syncInFlight) return { ok: false, reason: "busy" };
+    syncInFlight = true;
 
     try {
-      await mergeRemoteBeforePush();
       const { owner, repo, branch } = syncRepoParts(settings);
-      const payload = buildBackupPayload();
-      const body = JSON.stringify(payload, null, 2);
       const headers = {
         Authorization: `Bearer ${settings.token}`,
         Accept: "application/vnd.github+json",
@@ -3637,6 +3701,19 @@
       } else if (metaRes.status !== 404) {
         throw new Error("github-read");
       }
+
+      const remote = await fetchRemoteBackupData();
+      // never overwrite an existing cloud file if we couldn't read it (avoids wiping other devices)
+      if (sha && !remote) {
+        if (!silent) {
+          showBanner("Could not read cloud backup before upload — skipped to avoid data loss.", true);
+        }
+        return { ok: false, reason: "merge-failed" };
+      }
+      if (remote) importBackup(remote, { silent: true, skipCloudPush: true });
+
+      const payload = buildBackupPayload();
+      const body = JSON.stringify(payload, null, 2);
 
       const putRes = await fetch(
         `https://api.github.com/repos/${owner}/${repo}/contents/${SYNC_FILE_PATH}`,
@@ -3677,6 +3754,8 @@
         );
       }
       return { ok: false, reason: "error" };
+    } finally {
+      syncInFlight = false;
     }
   }
 
@@ -3686,6 +3765,8 @@
     renderSyncStatus();
     const syncIfVisible = async () => {
       if (document.visibilityState !== "visible") return;
+      // Avoid mid-compose races that made the add form / list look wiped.
+      if (isAddWorkoutOpen()) return;
       await pullCloudSync({ silent: true });
       await syncIfLocalAhead();
     };
@@ -3736,7 +3817,8 @@
     const warningEl = document.getElementById("sync-warning");
     fetchRemoteBackupData().then((remote) => {
       const remoteCustom = Array.isArray(remote?.custom) ? remote.custom.length : 0;
-      if (remote) rememberRemoteSnapshot(remote);
+      // Count only — do not stamp fingerprint here or auto-pull will skip importing.
+      if (remote) noteRemoteCustomCount(remote);
       const remoteEmpty =
         !remote ||
         remote.exportedAt === "1970-01-01T00:00:00.000Z" ||
