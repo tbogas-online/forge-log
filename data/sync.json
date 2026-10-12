@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-10-12T09:32:00.490Z",
+  "exportedAt": "2026-10-12T15:22:10.046Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -422,6 +422,9 @@
       "deleted": true,
       "completed": true,
       "completedManual": true
+    },
+    "2026-10-12-wod": {
+      "updatedAt": "2026-10-12T09:32:30.025Z"
     }
   },
   "custom": [
@@ -880,6 +883,21 @@
         {
           "name": "WORKOUT",
           "content": "09-10-2026 - WOD Partner\n\nFor time 30’\n10 G2OH Sync (DB/Plate)\n20 Burpees Over DB/Plate Sync\n30 Thrusters Sync (DB/Plate)\n40 KB Swing\n50 Sit Ups\n200 Double Unders\n50 Sit Ups\n40 KB Swing\n30 Thrusters Sync (DB/Plate)\n20 Burpees Over DB/Plate Sync\n10 G2OH Sync (DB/Plate)",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-12-wod",
+      "date": "2026-10-12",
+      "type": "WOD",
+      "title": "3 Super Sets:",
+      "rawText": "3 Super Sets:\n12 Barbell Strict Press\nMax Strict HSPU\nRest 1'30''/set\n\n3 Super Sets:\n12 Banded Tricep Extension\n12 Banded Bicep Curl\nRest 1'30''/set\n4 Rounds, For Time:\n250/200m Erg\n12 2DB Box Step Overs\n4 Wall Walks",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "3 Super Sets:\n12 Barbell Strict Press\nMax Strict HSPU\nRest 1'30''/set\n\n3 Super Sets:\n12 Banded Tricep Extension\n12 Banded Bicep Curl\nRest 1'30''/set\n4 Rounds, For Time:\n250/200m Erg\n12 2DB Box Step Overs\n4 Wall Walks",
           "scoreType": "time"
         }
       ]
