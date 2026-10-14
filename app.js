@@ -1134,7 +1134,9 @@
       completedManual: true,
       updatedAt: new Date().toISOString(),
     };
-    saveLogs();
+    // Persist immediately; cloud push merges by updatedAt so this won't be clobbered.
+    saveLogs({ skipCloudPush: true });
+    syncCloudAfterLocalChange().then(() => renderSyncStatus());
   }
 
   function deleteWorkoutById(id) {
@@ -1228,6 +1230,8 @@
     els.openBalloon.style.top = `${top}px`;
 
     els.openBalloon.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const actionBtn = e.target.closest("[data-action]");
       if (!actionBtn) return;
       const action = actionBtn.dataset.action;
@@ -1236,6 +1240,7 @@
         hideOpenBalloon();
         showBanner("Marked complete.");
         renderStats();
+        renderWorkload();
         renderList();
         if (state.selectedId === workout.id) renderDetail();
         return;
@@ -1245,6 +1250,7 @@
         hideOpenBalloon();
         showBanner("Marked open.");
         renderStats();
+        renderWorkload();
         renderList();
         if (state.selectedId === workout.id) renderDetail();
         return;
@@ -3467,9 +3473,10 @@
         merged[id] = remoteEntry;
         continue;
       }
+      const localAt = new Date(localEntry.updatedAt || 0).getTime();
+      const remoteAt = new Date(remoteEntry.updatedAt || 0).getTime();
+
       if (localEntry.deleted || remoteEntry.deleted) {
-        const localAt = new Date(localEntry.updatedAt || 0).getTime();
-        const remoteAt = new Date(remoteEntry.updatedAt || 0).getTime();
         // Newer side wins for delete vs re-add. Never force deleted when the newer entry is alive.
         if (remoteAt > localAt) {
           merged[id] = { ...localEntry, ...remoteEntry };
@@ -3487,7 +3494,19 @@
         }
         continue;
       }
-      merged[id] = { ...localEntry, ...remoteEntry };
+
+      // Newer updatedAt wins. Old cloud logs must not clobber a just-marked complete/open.
+      if (remoteAt > localAt) {
+        merged[id] = { ...localEntry, ...remoteEntry };
+      } else if (localAt > remoteAt) {
+        merged[id] = { ...remoteEntry, ...localEntry };
+      } else {
+        merged[id] = { ...localEntry, ...remoteEntry };
+        if (localEntry.completedManual && typeof localEntry.completed === "boolean") {
+          merged[id].completed = localEntry.completed;
+          merged[id].completedManual = true;
+        }
+      }
     }
     return merged;
   }
