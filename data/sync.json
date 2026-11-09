@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-09T11:06:04.625Z",
+  "exportedAt": "2026-11-09T11:07:11.985Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -539,13 +539,25 @@
       "completedAuto": true
     },
     "2026-11-09-wod": {
-      "updatedAt": "2026-11-09T11:05:24.214Z"
+      "updatedAt": "2026-11-09T11:05:24.214Z",
+      "completed": true,
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
     },
     "2026-11-10-wod": {
       "updatedAt": "2026-11-09T11:05:43.568Z"
     },
     "2026-11-11-wod": {
       "updatedAt": "2026-11-09T11:06:03.512Z"
+    },
+    "2026-11-12-wod": {
+      "updatedAt": "2026-11-09T11:06:25.012Z"
+    },
+    "2026-11-13-wod": {
+      "updatedAt": "2026-11-09T11:06:56.685Z"
     }
   },
   "custom": [
@@ -1379,6 +1391,36 @@
         {
           "name": "WORKOUT",
           "content": "11-11-2026 WOD\nEvery 2' x 5 Sets:\n5 Deadlifts (3'' Down)\n3 Rounds:\n10 Burpee Shuttle Runs\n10m 2DB Walking Lunges\ninto...\n3 Rounds:\n10 Burpee Shuttle Runs\n10 2DB Box Step Over",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-12-wod",
+      "date": "2026-11-12",
+      "type": "WOD",
+      "title": "12-11-2026 WOD",
+      "rawText": "12-11-2026 WOD\nEvery 2' x 5 Sets:\n1 Power Clean\n1 Hang Clean\n1 STOH\n8 Rounds, For Time:\n10 T2B\n8 Cals Erg\n6 Power Cleans",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "12-11-2026 WOD\nEvery 2' x 5 Sets:\n1 Power Clean\n1 Hang Clean\n1 STOH\n8 Rounds, For Time:\n10 T2B\n8 Cals Erg\n6 Power Cleans",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-13-wod",
+      "date": "2026-11-13",
+      "type": "WOD",
+      "title": "13-11-2026 WOD",
+      "rawText": "13-11-2026 WOD\nRope Climbs\n\nEMOM 8'\n1-2 Rope Climbs\nAMRAP 16'\n8 Devil Presses\n16 KB Swings\n32 Double Unders",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "13-11-2026 WOD\nRope Climbs\n\nEMOM 8'\n1-2 Rope Climbs\nAMRAP 16'\n8 Devil Presses\n16 KB Swings\n32 Double Unders",
           "scoreType": "rounds"
         }
       ]
