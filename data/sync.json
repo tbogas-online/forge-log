@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-09T10:57:27.039Z",
+  "exportedAt": "2026-11-09T10:58:29.662Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -455,6 +455,11 @@
     },
     "2026-10-19-wod": {
       "updatedAt": "2026-11-09T10:57:27.016Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-10-20-wod": {
+      "updatedAt": "2026-11-09T10:58:29.639Z",
       "completed": true,
       "completedAuto": true
     }
@@ -1006,6 +1011,21 @@
           "name": "WORKOUT",
           "content": "19/10/2026 WOD\n\nEvery 2'30'' x 4 Sets:\n7-7-6-6\nDeficit Deadlift\nFor Time:\n21-15-9\nDeadlift @70kg/45kg\nPull Ups\nRest 2'\n9-15-21\nDeadlift @70kg/45kg\nPull Ups",
           "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-20-wod",
+      "date": "2026-10-20",
+      "type": "WOD",
+      "title": "20/10/2026 WOD",
+      "rawText": "20/10/2026 WOD\n3 Super Sets:\n12 2DB Strict Press\nMax Front Raises unbroken\nRest 1'30''/set\n\n3 Super Sets:\n8-12 Ring Dips\n12 2DB Bicep Curl\nRest 1'30''/set\nAMRAP 4'\n4 Power Cleans @60/43kg\n8 Box Jump Overs\nRest 2'\nAMRAP 4'\n4 Shoulder to Overhead @60/43kg\n8 Box Jump Over",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "20/10/2026 WOD\n3 Super Sets:\n12 2DB Strict Press\nMax Front Raises unbroken\nRest 1'30''/set\n\n3 Super Sets:\n8-12 Ring Dips\n12 2DB Bicep Curl\nRest 1'30''/set\nAMRAP 4'\n4 Power Cleans @60/43kg\n8 Box Jump Overs\nRest 2'\nAMRAP 4'\n4 Shoulder to Overhead @60/43kg\n8 Box Jump Over",
+          "scoreType": "rounds"
         }
       ]
     }
