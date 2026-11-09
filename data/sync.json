@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-09T11:04:57.975Z",
+  "exportedAt": "2026-11-09T11:06:04.625Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -537,6 +537,15 @@
       "updatedAt": "2026-11-09T11:04:57.944Z",
       "completed": true,
       "completedAuto": true
+    },
+    "2026-11-09-wod": {
+      "updatedAt": "2026-11-09T11:05:24.214Z"
+    },
+    "2026-11-10-wod": {
+      "updatedAt": "2026-11-09T11:05:43.568Z"
+    },
+    "2026-11-11-wod": {
+      "updatedAt": "2026-11-09T11:06:03.512Z"
     }
   },
   "custom": [
@@ -1325,6 +1334,51 @@
         {
           "name": "WORKOUT",
           "content": "07-11-2026 WOD-Partner\nAMRAP 16'\n20 Burpees Over DB (Split)\n20 DB Squat Clean (Split)\n20 DB Push Press (Split)\n20 Pull Ups (Split)\n\nRest 3'\n\nAMRAP 16'\n20 Cals Erg (Split)\n20 KB Goblet Front Lunges (Split)\n20 Plate Ground to Overhead (Split)\n20 T2B (Split)",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-09-wod",
+      "date": "2026-11-09",
+      "type": "WOD",
+      "title": "09-11-2026 WOD",
+      "rawText": "09-11-2026 WOD\nPull Ups\nC2B Pull Ups\n\nEMOM 8'\n3-6 reps\n4 Sets:\n12/10 Cals Erg\n12 DB Snatch\n6-12 Pull Ups or C2B\nRest 1'30''/round\n\nSCORE = Worst Set",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "09-11-2026 WOD\nPull Ups\nC2B Pull Ups\n\nEMOM 8'\n3-6 reps\n4 Sets:\n12/10 Cals Erg\n12 DB Snatch\n6-12 Pull Ups or C2B\nRest 1'30''/round\n\nSCORE = Worst Set",
+          "scoreType": "reps"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-10-wod",
+      "date": "2026-11-10",
+      "type": "WOD",
+      "title": "10-11-2026 WOD",
+      "rawText": "10-11-2026 WOD\n\nEvery 1'30'' x 8 Sets\n3 Hang Power Snatch\n3 Sets:\n4' AMRAP - 1' Rest\n10-20-30-40-50...\nDouble Unders\n2-4-6-8-10-12...\nHang Power Snatch",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "10-11-2026 WOD\n\nEvery 1'30'' x 8 Sets\n3 Hang Power Snatch\n3 Sets:\n4' AMRAP - 1' Rest\n10-20-30-40-50...\nDouble Unders\n2-4-6-8-10-12...\nHang Power Snatch",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-11-wod",
+      "date": "2026-11-11",
+      "type": "WOD",
+      "title": "11-11-2026 WOD",
+      "rawText": "11-11-2026 WOD\nEvery 2' x 5 Sets:\n5 Deadlifts (3'' Down)\n3 Rounds:\n10 Burpee Shuttle Runs\n10m 2DB Walking Lunges\ninto...\n3 Rounds:\n10 Burpee Shuttle Runs\n10 2DB Box Step Over",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "11-11-2026 WOD\nEvery 2' x 5 Sets:\n5 Deadlifts (3'' Down)\n3 Rounds:\n10 Burpee Shuttle Runs\n10m 2DB Walking Lunges\ninto...\n3 Rounds:\n10 Burpee Shuttle Runs\n10 2DB Box Step Over",
           "scoreType": "rounds"
         }
       ]
