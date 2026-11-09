@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-09T10:59:58.807Z",
+  "exportedAt": "2026-11-09T11:01:21.589Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -475,6 +475,21 @@
     },
     "2026-10-23-wod": {
       "updatedAt": "2026-11-09T10:59:58.781Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-10-26-wod": {
+      "updatedAt": "2026-11-09T11:00:30.864Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-10-27-wod": {
+      "updatedAt": "2026-11-09T11:00:53.543Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-10-28-wod": {
+      "updatedAt": "2026-11-09T11:01:21.557Z",
       "completed": true,
       "completedAuto": true
     }
@@ -1086,6 +1101,51 @@
           "name": "WORKOUT",
           "content": "23-10-2026 WOD\nTEAMS OF 4\n\nPAIR 1\nMax cals Erg\n\nPAIR 2\n6 Bar Facing Burpees\n12 Thrusters\n48 Double Unders\n\nWorkout finish when team complete 400 Cals Erg",
           "scoreType": "reps"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-26-wod",
+      "date": "2026-10-26",
+      "type": "WOD",
+      "title": "26-10-2026 WOD",
+      "rawText": "26-10-2026 WOD\n3 Super-Sets:\n10 2DB Floor Press\nMax Ring Dips unbroken\nRest 1'30''/set\n\n3 Super Sets:\n10 BB Bent Over Row\nMax Inverted Rows unbroken\nRest 1'30''/set\nEMOM to Death\n4 Burpees Over the Bar\n1-2-3-4-5-6-7-8...\nPush Press\nPull Ups",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "26-10-2026 WOD\n3 Super-Sets:\n10 2DB Floor Press\nMax Ring Dips unbroken\nRest 1'30''/set\n\n3 Super Sets:\n10 BB Bent Over Row\nMax Inverted Rows unbroken\nRest 1'30''/set\nEMOM to Death\n4 Burpees Over the Bar\n1-2-3-4-5-6-7-8...\nPush Press\nPull Ups",
+          "scoreType": "reps"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-27-wod",
+      "date": "2026-10-27",
+      "type": "WOD",
+      "title": "27-10-2026 WOD",
+      "rawText": "27-10-2026 WOD\nEMOM 8'\n3 Clean & Jerk\n@RPE 8 | @75-80%\nAMRAP 12'\n1 Rope Climbs\n3 Wall Walks\n9 Clean & Jerks @50/35kg\n1 Rope Climbs\n3 Wall Walks\n6 Clean & Jerks @60/45kg\n1 Rope Climbs\n3 Wall Walks\n3 Clean & Jerks @70/55kg\n1 Rope Climbs\n3 Wall Walks\nMax Clean & Jerks @80/65kg",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "27-10-2026 WOD\nEMOM 8'\n3 Clean & Jerk\n@RPE 8 | @75-80%\nAMRAP 12'\n1 Rope Climbs\n3 Wall Walks\n9 Clean & Jerks @50/35kg\n1 Rope Climbs\n3 Wall Walks\n6 Clean & Jerks @60/45kg\n1 Rope Climbs\n3 Wall Walks\n3 Clean & Jerks @70/55kg\n1 Rope Climbs\n3 Wall Walks\nMax Clean & Jerks @80/65kg",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-28-wod",
+      "date": "2026-10-28",
+      "type": "WOD",
+      "title": "28-10-2026 WOD",
+      "rawText": "28-10-2026 WOD\nEvery 2'30'' x 4 Sets:\n6-6-5-5\nDeficit Deadlift\n3 Rounds, For Time:\n12/9 Cals Erg\n12 Deadlifts\n12 Box Jump Overs\n12 Toes to Bar\nRest 1'30''/round\n\nSCORE = WORST SET",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "28-10-2026 WOD\nEvery 2'30'' x 4 Sets:\n6-6-5-5\nDeficit Deadlift\n3 Rounds, For Time:\n12/9 Cals Erg\n12 Deadlifts\n12 Box Jump Overs\n12 Toes to Bar\nRest 1'30''/round\n\nSCORE = WORST SET",
+          "scoreType": "time"
         }
       ]
     }
