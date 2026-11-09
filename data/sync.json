@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-09T11:07:11.985Z",
+  "exportedAt": "2026-11-09T11:08:14.138Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -558,6 +558,11 @@
     },
     "2026-11-13-wod": {
       "updatedAt": "2026-11-09T11:06:56.685Z"
+    },
+    "2026-10-18-run": {
+      "updatedAt": "2026-11-09T11:08:14.110Z",
+      "completed": true,
+      "completedAuto": true
     }
   },
   "custom": [
@@ -1422,6 +1427,21 @@
           "name": "WORKOUT",
           "content": "13-11-2026 WOD\nRope Climbs\n\nEMOM 8'\n1-2 Rope Climbs\nAMRAP 16'\n8 Devil Presses\n16 KB Swings\n32 Double Unders",
           "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-18-run",
+      "date": "2026-10-18",
+      "type": "RUN",
+      "title": "Outdoor run",
+      "rawText": "Outdoor run\nRun 2026-10-18 07:31:19 HUAWEI WATCH GT 4\n\nDistance\n6.03 km\nPace\n5:49 /km\nTime\n35m 7s",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "Outdoor run\nRun 2026-10-18 07:31:19 HUAWEI WATCH GT 4\n\nDistance\n6.03 km\nPace\n5:49 /km\nTime\n35m 7s",
+          "scoreType": "notes"
         }
       ]
     }
