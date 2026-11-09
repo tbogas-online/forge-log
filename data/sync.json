@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-10-12T15:22:10.046Z",
+  "exportedAt": "2026-11-09T10:56:22.814Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -162,12 +162,6 @@
       "completedAuto": true,
       "updatedAt": "2026-08-28T10:56:12.075Z"
     },
-    "2026-08-28-wod": {
-      "completed": true,
-      "completedAuto": true,
-      "updatedAt": "2026-08-28T10:54:45.514Z",
-      "completedManual": true
-    },
     "2026-03-22-walk": {
       "completed": true,
       "completedAuto": true,
@@ -182,6 +176,12 @@
       "completed": true,
       "completedAuto": true,
       "updatedAt": "2026-08-28T09:39:30.254Z"
+    },
+    "2026-08-28-wod": {
+      "completed": true,
+      "completedManual": true,
+      "updatedAt": "2026-08-28T10:54:45.514Z",
+      "completedAuto": true
     },
     "2026-08-17-wod": {
       "completed": true,
@@ -424,7 +424,34 @@
       "completedManual": true
     },
     "2026-10-12-wod": {
-      "updatedAt": "2026-10-12T09:32:30.025Z"
+      "updatedAt": "2026-10-12T09:32:30.025Z",
+      "completed": true,
+      "completedAuto": true,
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
+    },
+    "2026-10-13-wod": {
+      "updatedAt": "2026-10-14T13:44:42.113Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-10-14-wod": {
+      "updatedAt": "2026-10-14T13:46:00.191Z",
+      "completed": true,
+      "completedManual": true
+    },
+    "2026-10-15-wod": {
+      "updatedAt": "2026-11-09T10:56:21.160Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-10-16-wod": {
+      "updatedAt": "2026-11-09T10:56:21.160Z",
+      "completed": true,
+      "completedAuto": true
     }
   },
   "custom": [
@@ -898,6 +925,66 @@
         {
           "name": "WORKOUT",
           "content": "3 Super Sets:\n12 Barbell Strict Press\nMax Strict HSPU\nRest 1'30''/set\n\n3 Super Sets:\n12 Banded Tricep Extension\n12 Banded Bicep Curl\nRest 1'30''/set\n4 Rounds, For Time:\n250/200m Erg\n12 2DB Box Step Overs\n4 Wall Walks",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-13-wod",
+      "date": "2026-10-13",
+      "type": "WOD",
+      "title": "13-10-2026  WOD",
+      "rawText": "13-10-2026  WOD\nEvery 1'30'' x 8 Sets\n1 Snatch Pull\n1 Hang Power Snatch\n1 Overhead Squat\nFor Time:\n20 Bar Muscle Ups\n40 Cals Erg\n80 Wallballs",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "13-10-2026  WOD\nEvery 1'30'' x 8 Sets\n1 Snatch Pull\n1 Hang Power Snatch\n1 Overhead Squat\nFor Time:\n20 Bar Muscle Ups\n40 Cals Erg\n80 Wallballs",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-14-wod",
+      "date": "2026-10-14",
+      "type": "WOD",
+      "title": "14-10-2026 WOD",
+      "rawText": "14-10-2026 WOD \n\nEvery 2'30'' x 4 Sets:\n7-7-6-6\nFront Squats\nAMRAP 20'\n4 Front Squats @60/40kg\n8 Toes to Bar\n200m Run\n\nSwitch partner every exercise",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "14-10-2026 WOD \n\nEvery 2'30'' x 4 Sets:\n7-7-6-6\nFront Squats\nAMRAP 20'\n4 Front Squats @60/40kg\n8 Toes to Bar\n200m Run\n\nSwitch partner every exercise",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-15-wod",
+      "date": "2026-10-15",
+      "type": "WOD",
+      "title": "15-10-2026 WOD",
+      "rawText": "15-10-2026 WOD \n\n3 Super-Sets:\n12 Barbell Floor Press\nMax Push Ups unbroken\nRest 1'30''/set\n\n3 Super Sets:\n2-3 Legless Rope Climbs\nMax Banded Lat Pull Down unbroken\nRest 1'30''/set\n0' - 6'\nAMRAP\n2-4-5-6-8...\nDB Snatch @22,5/15kg\nBurpees Over DB\n6' - 10'\nFor Time:\n30 Heavy DB Snatch @30/22,5kg\n30 Burpees Over DB",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "15-10-2026 WOD \n\n3 Super-Sets:\n12 Barbell Floor Press\nMax Push Ups unbroken\nRest 1'30''/set\n\n3 Super Sets:\n2-3 Legless Rope Climbs\nMax Banded Lat Pull Down unbroken\nRest 1'30''/set\n0' - 6'\nAMRAP\n2-4-5-6-8...\nDB Snatch @22,5/15kg\nBurpees Over DB\n6' - 10'\nFor Time:\n30 Heavy DB Snatch @30/22,5kg\n30 Burpees Over DB",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-16-wod",
+      "date": "2026-10-16",
+      "type": "WOD",
+      "title": "16-10-2026 WOD",
+      "rawText": "16-10-2026 WOD\nEvery 1'30'' x 8 Sets:\n2 Clean & Jerks\n@RPE 8 | @80-85%\n5 Rounds, For Time:\n50 Double Unders\n10-8-6-4-2\nClean & Jerks\nC2B Pull Ups",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "16-10-2026 WOD\nEvery 1'30'' x 8 Sets:\n2 Clean & Jerks\n@RPE 8 | @80-85%\n5 Rounds, For Time:\n50 Double Unders\n10-8-6-4-2\nClean & Jerks\nC2B Pull Ups",
           "scoreType": "time"
         }
       ]
