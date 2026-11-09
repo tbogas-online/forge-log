@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-09T11:03:38.399Z",
+  "exportedAt": "2026-11-09T11:04:57.975Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -520,6 +520,21 @@
     },
     "2026-11-04-wod": {
       "updatedAt": "2026-11-09T11:03:38.351Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-11-05-wod": {
+      "updatedAt": "2026-11-09T11:03:58.453Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-11-06-hybrid": {
+      "updatedAt": "2026-11-09T11:04:35.114Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-11-07-wod": {
+      "updatedAt": "2026-11-09T11:04:57.944Z",
       "completed": true,
       "completedAuto": true
     }
@@ -1266,6 +1281,51 @@
           "name": "WORKOUT",
           "content": "04-11-2026 WOD\nEMOM 8'\n2 Clean & Jerk\n@RPE 8 | @80-85%\nEMOM 16’\n\nA: 50 DU´s\nB: 10 Hang 2DB cleans\nC: 12 Pull Ups/ 10 C2B / 8 BMU\nD: Rest",
           "scoreType": "notes"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-05-wod",
+      "date": "2026-11-05",
+      "type": "WOD",
+      "title": "05-11-2026 WOD",
+      "rawText": "05-11-2026 WOD\nEvery 2'30'' x 4 Sets:\n5-5-4-4\nDeficit Deadlift\n4 Rounds:\n\n250m Ergs\n10 Deadlift @80/60kg\n10 2DB Box Step Over @22,5/15kgs\n3 Rope Climbs\n\nTime cap: 15'",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "05-11-2026 WOD\nEvery 2'30'' x 4 Sets:\n5-5-4-4\nDeficit Deadlift\n4 Rounds:\n\n250m Ergs\n10 Deadlift @80/60kg\n10 2DB Box Step Over @22,5/15kgs\n3 Rope Climbs\n\nTime cap: 15'",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-06-hybrid",
+      "date": "2026-11-06",
+      "type": "HYBRID",
+      "title": "06-11-2026 HYBRID",
+      "rawText": "06-11-2026 HYBRID \n\nDoubles:\nFor time:\n150 Cals Erg\n100 KB Box Step Up\n50 Burpee broad jump (1m)\n100 Sit Ups\n50 Push Ups\n\nTime cap: 30'",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "06-11-2026 HYBRID \n\nDoubles:\nFor time:\n150 Cals Erg\n100 KB Box Step Up\n50 Burpee broad jump (1m)\n100 Sit Ups\n50 Push Ups\n\nTime cap: 30'",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-07-wod",
+      "date": "2026-11-07",
+      "type": "WOD",
+      "title": "07-11-2026 WOD-Partner",
+      "rawText": "07-11-2026 WOD-Partner\nAMRAP 16'\n20 Burpees Over DB (Split)\n20 DB Squat Clean (Split)\n20 DB Push Press (Split)\n20 Pull Ups (Split)\n\nRest 3'\n\nAMRAP 16'\n20 Cals Erg (Split)\n20 KB Goblet Front Lunges (Split)\n20 Plate Ground to Overhead (Split)\n20 T2B (Split)",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "07-11-2026 WOD-Partner\nAMRAP 16'\n20 Burpees Over DB (Split)\n20 DB Squat Clean (Split)\n20 DB Push Press (Split)\n20 Pull Ups (Split)\n\nRest 3'\n\nAMRAP 16'\n20 Cals Erg (Split)\n20 KB Goblet Front Lunges (Split)\n20 Plate Ground to Overhead (Split)\n20 T2B (Split)",
+          "scoreType": "rounds"
         }
       ]
     }
