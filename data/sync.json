@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-09T11:02:31.036Z",
+  "exportedAt": "2026-11-09T11:03:38.399Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -505,6 +505,21 @@
     },
     "2026-10-31-wod": {
       "updatedAt": "2026-11-09T11:02:31.011Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-11-02-wod": {
+      "updatedAt": "2026-11-09T11:02:57.661Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-11-03-wod": {
+      "updatedAt": "2026-11-09T11:03:21.408Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-11-04-wod": {
+      "updatedAt": "2026-11-09T11:03:38.351Z",
       "completed": true,
       "completedAuto": true
     }
@@ -1206,6 +1221,51 @@
           "name": "WORKOUT",
           "content": "31-10-2026 Community WOD\nEMOM 16’\nA: Max Front Squats\nB: Max Push Press\nC: Max Thrusters\nD: Rest\n\nRest 3’\n\nEMOM 16’\nA: Max Box Jump Overs\nB: Max Burpees Over DB\nC: Max DB Snatch\nD: Rest",
           "scoreType": "reps"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-02-wod",
+      "date": "2026-11-02",
+      "type": "WOD",
+      "title": "02-11-2026 WOD",
+      "rawText": "02-11-2026 WOD\nEvery 2'30'' x 4 Sets:\n5-5-4-4\nFront Squats\nAMRAP 15'\n12/10 Cals Erg\n8 Hang Power Snatch\n8 T2B",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "02-11-2026 WOD\nEvery 2'30'' x 4 Sets:\n5-5-4-4\nFront Squats\nAMRAP 15'\n12/10 Cals Erg\n8 Hang Power Snatch\n8 T2B",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-03-wod",
+      "date": "2026-11-03",
+      "type": "WOD",
+      "title": "03-11-2026 WOD",
+      "rawText": "03-11-2026 WOD\n3 Super-Sets:\n10 Barbell Floor Press\nMax Push Ups unbroken\nRest 1'30''/set\n\n3 Super Sets:\n2-3 Legless Rope Climbs\nMax Ring Rows unbroken\nRest 1'30''/set\n3 Rounds:\n\n400m Run\n8 Burpee Deadlift\n8 DB Push Press\n4 Wallwalks\n\nTime Cap: 15'",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "03-11-2026 WOD\n3 Super-Sets:\n10 Barbell Floor Press\nMax Push Ups unbroken\nRest 1'30''/set\n\n3 Super Sets:\n2-3 Legless Rope Climbs\nMax Ring Rows unbroken\nRest 1'30''/set\n3 Rounds:\n\n400m Run\n8 Burpee Deadlift\n8 DB Push Press\n4 Wallwalks\n\nTime Cap: 15'",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-04-wod",
+      "date": "2026-11-04",
+      "type": "WOD",
+      "title": "04-11-2026 WOD",
+      "rawText": "04-11-2026 WOD\nEMOM 8'\n2 Clean & Jerk\n@RPE 8 | @80-85%\nEMOM 16’\n\nA: 50 DU´s\nB: 10 Hang 2DB cleans\nC: 12 Pull Ups/ 10 C2B / 8 BMU\nD: Rest",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "04-11-2026 WOD\nEMOM 8'\n2 Clean & Jerk\n@RPE 8 | @80-85%\nEMOM 16’\n\nA: 50 DU´s\nB: 10 Hang 2DB cleans\nC: 12 Pull Ups/ 10 C2B / 8 BMU\nD: Rest",
+          "scoreType": "notes"
         }
       ]
     }
