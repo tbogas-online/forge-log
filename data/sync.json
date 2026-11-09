@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-09T10:58:29.662Z",
+  "exportedAt": "2026-11-09T10:59:58.807Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -460,6 +460,21 @@
     },
     "2026-10-20-wod": {
       "updatedAt": "2026-11-09T10:58:29.639Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-10-21-wod": {
+      "updatedAt": "2026-11-09T10:58:57.293Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-10-22-hybrid": {
+      "updatedAt": "2026-11-09T10:59:27.506Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-10-23-wod": {
+      "updatedAt": "2026-11-09T10:59:58.781Z",
       "completed": true,
       "completedAuto": true
     }
@@ -1026,6 +1041,51 @@
           "name": "WORKOUT",
           "content": "20/10/2026 WOD\n3 Super Sets:\n12 2DB Strict Press\nMax Front Raises unbroken\nRest 1'30''/set\n\n3 Super Sets:\n8-12 Ring Dips\n12 2DB Bicep Curl\nRest 1'30''/set\nAMRAP 4'\n4 Power Cleans @60/43kg\n8 Box Jump Overs\nRest 2'\nAMRAP 4'\n4 Shoulder to Overhead @60/43kg\n8 Box Jump Over",
           "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-21-wod",
+      "date": "2026-10-21",
+      "type": "WOD",
+      "title": "21-10-2026 WOD",
+      "rawText": "21-10-2026 WOD\nEvery 1'30'' x 6 Sets\n1 Power Snatch\n1 Hang Power Snatch\n1 Overhead Squat\n3 Rounds:\n400m Run\n20 Cals Erg\n30-20-10\nDB Snatch @22,5/15kg",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "21-10-2026 WOD\nEvery 1'30'' x 6 Sets\n1 Power Snatch\n1 Hang Power Snatch\n1 Overhead Squat\n3 Rounds:\n400m Run\n20 Cals Erg\n30-20-10\nDB Snatch @22,5/15kg",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-22-hybrid",
+      "date": "2026-10-22",
+      "type": "HYBRID",
+      "title": "22-10-2026 HYBRID",
+      "rawText": "22-10-2026 HYBRID\n''HALF HYROX''\nFor time:\n500m Run Together\n500m Ski\n500m Run Together\n25m Sled Push\n500m Run Together\n25m Sled Pull\n500m Run Together\n40m Burpee Broad Jump\n500m Run Together\n500m Row\n500m Run Together\n100m Farmer Carry\n500m Run Together\n50m Walking Lunges\n500m Run Together\n50 Wallballs\n\nTime Cap: 40'",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "22-10-2026 HYBRID\n''HALF HYROX''\nFor time:\n500m Run Together\n500m Ski\n500m Run Together\n25m Sled Push\n500m Run Together\n25m Sled Pull\n500m Run Together\n40m Burpee Broad Jump\n500m Run Together\n500m Row\n500m Run Together\n100m Farmer Carry\n500m Run Together\n50m Walking Lunges\n500m Run Together\n50 Wallballs\n\nTime Cap: 40'",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-23-wod",
+      "date": "2026-10-23",
+      "type": "WOD",
+      "title": "23-10-2026 WOD",
+      "rawText": "23-10-2026 WOD\nTEAMS OF 4\n\nPAIR 1\nMax cals Erg\n\nPAIR 2\n6 Bar Facing Burpees\n12 Thrusters\n48 Double Unders\n\nWorkout finish when team complete 400 Cals Erg",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "23-10-2026 WOD\nTEAMS OF 4\n\nPAIR 1\nMax cals Erg\n\nPAIR 2\n6 Bar Facing Burpees\n12 Thrusters\n48 Double Unders\n\nWorkout finish when team complete 400 Cals Erg",
+          "scoreType": "reps"
         }
       ]
     }
