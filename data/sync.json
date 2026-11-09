@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-09T10:56:22.814Z",
+  "exportedAt": "2026-11-09T10:57:27.039Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -450,6 +450,11 @@
     },
     "2026-10-16-wod": {
       "updatedAt": "2026-11-09T10:56:21.160Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-10-19-wod": {
+      "updatedAt": "2026-11-09T10:57:27.016Z",
       "completed": true,
       "completedAuto": true
     }
@@ -985,6 +990,21 @@
         {
           "name": "WORKOUT",
           "content": "16-10-2026 WOD\nEvery 1'30'' x 8 Sets:\n2 Clean & Jerks\n@RPE 8 | @80-85%\n5 Rounds, For Time:\n50 Double Unders\n10-8-6-4-2\nClean & Jerks\nC2B Pull Ups",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-19-wod",
+      "date": "2026-10-19",
+      "type": "WOD",
+      "title": "19/10/2026 WOD",
+      "rawText": "19/10/2026 WOD\n\nEvery 2'30'' x 4 Sets:\n7-7-6-6\nDeficit Deadlift\nFor Time:\n21-15-9\nDeadlift @70kg/45kg\nPull Ups\nRest 2'\n9-15-21\nDeadlift @70kg/45kg\nPull Ups",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "19/10/2026 WOD\n\nEvery 2'30'' x 4 Sets:\n7-7-6-6\nDeficit Deadlift\nFor Time:\n21-15-9\nDeadlift @70kg/45kg\nPull Ups\nRest 2'\n9-15-21\nDeadlift @70kg/45kg\nPull Ups",
           "scoreType": "time"
         }
       ]
