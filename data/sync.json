@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-09T11:01:21.589Z",
+  "exportedAt": "2026-11-09T11:02:31.036Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -490,6 +490,21 @@
     },
     "2026-10-28-wod": {
       "updatedAt": "2026-11-09T11:01:21.557Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-10-29-wod": {
+      "updatedAt": "2026-11-09T11:01:42.631Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-10-30-wod": {
+      "updatedAt": "2026-11-09T11:02:02.808Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-10-31-wod": {
+      "updatedAt": "2026-11-09T11:02:31.011Z",
       "completed": true,
       "completedAuto": true
     }
@@ -1146,6 +1161,51 @@
           "name": "WORKOUT",
           "content": "28-10-2026 WOD\nEvery 2'30'' x 4 Sets:\n6-6-5-5\nDeficit Deadlift\n3 Rounds, For Time:\n12/9 Cals Erg\n12 Deadlifts\n12 Box Jump Overs\n12 Toes to Bar\nRest 1'30''/round\n\nSCORE = WORST SET",
           "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-29-wod",
+      "date": "2026-10-29",
+      "type": "WOD",
+      "title": "29-10-2026 WOD",
+      "rawText": "29-10-2026 WOD\n3 Super Sets:\n10 Barbell Strict Press\nMax Strict HSPU\nRest 1'30''/set\n\n3 Super Sets:\n12 Banded Tricep Extension\n12 Banded Bicep Curl\nRest 1'30''/set\nAMRAP 10'\n10-20-30-40...\nWall Balls\n40 Double Unders\n8 2DB Devil Presses",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "29-10-2026 WOD\n3 Super Sets:\n10 Barbell Strict Press\nMax Strict HSPU\nRest 1'30''/set\n\n3 Super Sets:\n12 Banded Tricep Extension\n12 Banded Bicep Curl\nRest 1'30''/set\nAMRAP 10'\n10-20-30-40...\nWall Balls\n40 Double Unders\n8 2DB Devil Presses",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-30-wod",
+      "date": "2026-10-30",
+      "type": "WOD",
+      "title": "30-10-2026 WOD",
+      "rawText": "30-10-2026 WOD\nEvery 1'30'' x 6 Sets\n1 Power Snatch\n1 Hang Squat Snatch\n1 Overhead Squat\n4 Sets:\n4' AMRAP - 1' Rest\n3 Bar Muscle Ups or 6 C2B\n6 DB Snatch\n9 DB Goblet Squats",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "30-10-2026 WOD\nEvery 1'30'' x 6 Sets\n1 Power Snatch\n1 Hang Squat Snatch\n1 Overhead Squat\n4 Sets:\n4' AMRAP - 1' Rest\n3 Bar Muscle Ups or 6 C2B\n6 DB Snatch\n9 DB Goblet Squats",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-10-31-wod",
+      "date": "2026-10-31",
+      "type": "WOD",
+      "title": "31-10-2026 Community WOD",
+      "rawText": "31-10-2026 Community WOD\nEMOM 16’\nA: Max Front Squats\nB: Max Push Press\nC: Max Thrusters\nD: Rest\n\nRest 3’\n\nEMOM 16’\nA: Max Box Jump Overs\nB: Max Burpees Over DB\nC: Max DB Snatch\nD: Rest",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "31-10-2026 Community WOD\nEMOM 16’\nA: Max Front Squats\nB: Max Push Press\nC: Max Thrusters\nD: Rest\n\nRest 3’\n\nEMOM 16’\nA: Max Box Jump Overs\nB: Max Burpees Over DB\nC: Max DB Snatch\nD: Rest",
+          "scoreType": "reps"
         }
       ]
     }
