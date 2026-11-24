@@ -1655,8 +1655,9 @@ body.add-workout-open {
   margin: 0;
   padding: 0.5rem;
   overflow: auto;
-  /* Show ~5 session rows; scroll for the rest */
-  max-height: calc(5 * 4.85rem + 1rem);
+  /* Show enough rows that recent sessions are visible without hunting */
+  max-height: min(70dvh, calc(12 * 4.85rem + 1rem));
+  scroll-behavior: smooth;
 }
 
 .workout-item {
@@ -2367,7 +2368,7 @@ body.add-workout-open {
   }
 
   .workout-list {
-    max-height: min(50dvh, calc(5 * 4.85rem + 1rem));
+    max-height: min(65dvh, calc(10 * 4.85rem + 1rem));
   }
 
   .workout-item {

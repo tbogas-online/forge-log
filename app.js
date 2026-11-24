@@ -2093,7 +2093,15 @@
     const items = filteredWorkouts();
     if (els.sessionsPanelMeta) {
       const n = items.length;
-      els.sessionsPanelMeta.textContent = `${n} session${n === 1 ? "" : "s"}`;
+      const latest = items[0]?.date
+        ? new Date(`${items[0].date}T12:00:00`).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+          })
+        : "";
+      els.sessionsPanelMeta.textContent = latest
+        ? `${n} session${n === 1 ? "" : "s"} · latest ${latest}`
+        : `${n} session${n === 1 ? "" : "s"}`;
     }
     if (!items.length) {
       els.list.innerHTML = `<li style="padding:1rem;color:var(--muted)">No sessions match.</li>`;
@@ -3588,11 +3596,35 @@
     return null;
   }
 
-  async function fetchFromRawMirrors(owner, repo, branch) {
-    const candidates = [
+  async function fetchLatestSyncCommitSha(owner, repo, branch, headers = {}) {
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(SYNC_FILE_PATH)}&sha=${encodeURIComponent(branch)}&per_page=1`,
+        { cache: "no-store", headers: { Accept: "application/json", ...headers } }
+      );
+      if (!res.ok) return null;
+      const commits = await res.json();
+      return commits?.[0]?.sha || null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function fetchFromRawMirrors(owner, repo, branch, commitSha = null) {
+    const candidates = [];
+    // Pin to commit SHA when known — branch URLs (/main/) are often CDN-stale.
+    if (commitSha) {
+      candidates.push(
+        `https://raw.githubusercontent.com/${owner}/${repo}/${commitSha}/${SYNC_FILE_PATH}`
+      );
+      candidates.push(
+        `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${commitSha}/${SYNC_FILE_PATH}`
+      );
+    }
+    candidates.push(
       `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${SYNC_FILE_PATH}?t=${Date.now()}`,
-      `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${SYNC_FILE_PATH}?t=${Date.now()}`,
-    ];
+      `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${SYNC_FILE_PATH}?t=${Date.now()}`
+    );
     for (const url of candidates) {
       try {
         const res = await fetch(url, { cache: "no-store" });
@@ -3637,8 +3669,8 @@
     const headers = { Accept: "application/json" };
     if (settings.token) headers.Authorization = `Bearer ${settings.token}`;
 
-    // With a token: API first (freshest). Without: raw mirrors first so we don't
-    // burn the unauthenticated 60/hour GitHub API quota every 30s on phones.
+    // With a token: API first (freshest). Without: resolve latest commit, then
+    // fetch raw by SHA so phones don't get a stale /main/ CDN copy.
     if (settings.token) {
       try {
         const fromApi = await fetchFromGitHubApi(owner, repo, branch, headers);
@@ -3646,16 +3678,36 @@
       } catch {
         /* fall through */
       }
-      return fetchFromRawMirrors(owner, repo, branch);
+      const sha = await fetchLatestSyncCommitSha(owner, repo, branch, headers);
+      return fetchFromRawMirrors(owner, repo, branch, sha);
     }
 
-    const fromRaw = await fetchFromRawMirrors(owner, repo, branch);
+    const sha = await fetchLatestSyncCommitSha(owner, repo, branch, headers);
+    const fromRaw = await fetchFromRawMirrors(owner, repo, branch, sha);
     if (fromRaw) return fromRaw;
     try {
       return await fetchFromGitHubApi(owner, repo, branch, headers);
     } catch {
       return null;
     }
+  }
+
+  function newestWorkout() {
+    return allWorkouts().slice().sort((a, b) => b.date.localeCompare(a.date))[0] || null;
+  }
+
+  function revealLatestSessions() {
+    setPanelOpen("sessions", true);
+    if (els.list) els.list.scrollTop = 0;
+    const newest = newestWorkout();
+    if (newest) {
+      state.selectedId = newest.id;
+      state.mode = "detail";
+      renderDetail();
+      syncDetailPanel();
+    }
+    renderList();
+    document.getElementById("sessions-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function renderSyncStatus() {
@@ -3714,22 +3766,42 @@
     return withSyncLock(async () => {
       try {
         const settings = loadSyncSettings();
-        const data = await fetchRemoteBackupData();
+        let data = await fetchRemoteBackupData();
         if (!data) {
           if (!silent) showBanner("Could not download cloud backup.", true);
           return { ok: false, reason: "missing" };
         }
 
+        // Force pull: refetch once and keep the newer/larger snapshot (CDN race).
+        if (force) {
+          await new Promise((r) => setTimeout(r, 800));
+          const again = await fetchRemoteBackupData();
+          if (again) {
+            const againAt = new Date(again.exportedAt || 0).getTime();
+            const dataAt = new Date(data.exportedAt || 0).getTime();
+            const againN = again.custom?.length || 0;
+            const dataN = data.custom?.length || 0;
+            if (againAt > dataAt || againN > dataN) data = again;
+          }
+        }
+
+        const remoteCustom = Array.isArray(data.custom) ? data.custom.length : 0;
         const missingBefore = remoteCustomIdsMissingLocally(data).length;
+        const behind = localCustomCount() < remoteCustom;
         const shouldImport =
-          force || remoteHasNewSessions(data, settings) || missingBefore > 0;
+          force ||
+          remoteHasNewSessions(data, settings) ||
+          missingBefore > 0 ||
+          behind;
 
         if (!shouldImport) {
           settings.lastPullAt = new Date().toISOString();
           noteRemoteCustomCount(data, settings);
           if (!silent) {
+            const latest = newestWorkout();
             showBanner(
-              `Cloud sync is up to date · ${data.custom?.length || 0} added sessions in cloud.`
+              `Cloud sync is up to date · ${remoteCustom} in cloud` +
+                (latest ? ` · latest ${latest.date}` : "")
             );
           }
           return { ok: true, changed: false, added: 0 };
@@ -3756,25 +3828,28 @@
         settings.lastPullAt = new Date().toISOString();
         rememberRemoteSnapshot(data, settings);
 
+        if (added > 0 || force) revealLatestSessions();
+
+        const latest = newestWorkout();
+        const latestBit = latest ? ` · latest ${latest.date}` : "";
+
         if (!silent) {
           if (added > 0) {
             showBanner(
-              `Synced ${added} session${added === 1 ? "" : "s"} from cloud · ${afterCustom} added on this device.`
+              `Synced ${added} session${added === 1 ? "" : "s"} · ${afterCustom} added on this device · ${remoteCustom} in cloud${latestBit}`
             );
-          } else if (stillMissing > 0) {
+          } else if (stillMissing > 0 || afterCustom < remoteCustom) {
             showBanner(
-              `Pull finished but ${stillMissing} cloud session${stillMissing === 1 ? "" : "s"} still missing locally.`,
+              `Still behind cloud (${afterCustom} here · ${remoteCustom} in cloud). Tap Pull now again.`,
               true
             );
           } else if (removed > 0) {
             showBanner(`Removed ${removed} session${removed === 1 ? "" : "s"} from cloud sync.`);
           } else {
-            showBanner(
-              `Cloud sync is up to date · ${data.custom?.length || 0} added sessions in cloud.`
-            );
+            showBanner(`Cloud sync is up to date · ${remoteCustom} in cloud${latestBit}`);
           }
         } else if (added > 0) {
-          showBanner(`Synced ${added} session${added === 1 ? "" : "s"} from cloud.`);
+          showBanner(`Synced ${added} session${added === 1 ? "" : "s"} from cloud${latestBit}`);
         } else if (removed > 0) {
           showBanner(`Removed ${removed} session${removed === 1 ? "" : "s"} from cloud sync.`);
         }
