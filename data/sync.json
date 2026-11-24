@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-24T09:38:45.144Z",
+  "exportedAt": "2026-11-24T09:48:47.846Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -162,12 +162,6 @@
       "completedAuto": true,
       "updatedAt": "2026-08-28T10:56:12.075Z"
     },
-    "2026-08-28-wod": {
-      "completed": true,
-      "completedAuto": true,
-      "updatedAt": "2026-08-28T10:54:45.514Z",
-      "completedManual": true
-    },
     "2026-03-22-walk": {
       "completed": true,
       "completedAuto": true,
@@ -182,6 +176,12 @@
       "completed": true,
       "completedAuto": true,
       "updatedAt": "2026-08-28T09:39:30.254Z"
+    },
+    "2026-08-28-wod": {
+      "completed": true,
+      "completedManual": true,
+      "updatedAt": "2026-08-28T10:54:45.514Z",
+      "completedAuto": true
     },
     "2026-08-17-wod": {
       "completed": true,
@@ -565,12 +565,70 @@
     "2026-11-13-wod": {
       "updatedAt": "2026-11-09T11:06:56.685Z",
       "completed": true,
+      "completedManual": true,
       "completedAuto": true
     },
     "2026-10-18-run": {
       "updatedAt": "2026-11-09T11:08:14.110Z",
       "completed": true,
       "completedAuto": true
+    },
+    "2026-11-13-fbb": {
+      "updatedAt": "2026-11-13T10:29:13.512Z",
+      "completed": true,
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
+    },
+    "2026-11-16-wod": {
+      "updatedAt": "2026-11-24T09:31:20.321Z",
+      "completed": true,
+      "completedAuto": true,
+      "completedManual": true,
+      "score": "",
+      "strengthLoad": "",
+      "rpe": "",
+      "notes": ""
+    },
+    "2026-11-17-wod": {
+      "updatedAt": "2026-11-24T09:31:38.732Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-11-18-wod": {
+      "updatedAt": "2026-11-24T09:32:08.738Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-11-19-wod": {
+      "updatedAt": "2026-11-24T09:32:31.972Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-11-20-wod": {
+      "updatedAt": "2026-11-24T09:32:52.654Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-11-21-hybrid": {
+      "updatedAt": "2026-11-24T09:34:12.773Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-11-23-wod": {
+      "updatedAt": "2026-11-24T09:34:38.926Z",
+      "completed": true,
+      "completedAuto": true
+    },
+    "2026-11-24-wod": {
+      "updatedAt": "2026-11-24T09:35:27.766Z",
+      "completed": true,
+      "completedManual": true
+    },
+    "2026-11-25-wod": {
+      "updatedAt": "2026-11-24T09:35:20.010Z"
     }
   },
   "custom": [
@@ -1449,6 +1507,163 @@
         {
           "name": "WORKOUT",
           "content": "Outdoor run\nRun 2026-10-18 07:31:19 HUAWEI WATCH GT 4\n\nDistance\n6.03 km\nPace\n5:49 /km\nTime\n35m 7s",
+          "scoreType": "notes"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-13-fbb",
+      "date": "2026-11-13",
+      "type": "FBB",
+      "title": "13-11-2026 FBB",
+      "rawText": "13-11-2026 FBB\n\nstrength\nEMOM 10'\nA: 3 KB Hang Clean + 2 KB Front Squats + 1 KB Push Press (R)\nB: 3 KB Hang Clean + 2 KB Front Squats + 1 KB Push Press (L)\n\nstrength endurance\n3 Sets:\n10 Single Arm Ring Rows (R)\nRest 30''\n10 Single Arm Ring Rows (L)\nRest 30''\n\nAcessory \n3 Rounds:\n10 Banded Bicep Curls\n10/10 Calf Raises\n10/10 Single Leg Glute Bridge",
+      "custom": true,
+      "sections": [
+        {
+          "name": "STRENGTH",
+          "format": "EMOM 10'",
+          "content": "A: 3 KB Hang Clean + 2 KB Front Squats + 1 KB Push Press (R)\nB: 3 KB Hang Clean + 2 KB Front Squats + 1 KB Push Press (L)",
+          "scoreType": "notes"
+        },
+        {
+          "name": "STRENGTH ENDURANCE",
+          "format": "3 Sets:",
+          "content": "10 Single Arm Ring Rows (R)\nRest 30''\n10 Single Arm Ring Rows (L)\nRest 30''\n\nAcessory \n3 Rounds:\n10 Banded Bicep Curls\n10/10 Calf Raises\n10/10 Single Leg Glute Bridge",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-16-wod",
+      "date": "2026-11-16",
+      "type": "WOD",
+      "title": "16-11-2026 WOD",
+      "rawText": "16-11-2026\n5 Back Squats (3'' down)\nFor Time:\n120-80-40\nDouble Unders\n60-40-20\nKB Swings\n30-20-10\nBurpees Over KB",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "16-11-2026\n5 Back Squats (3'' down)\nFor Time:\n120-80-40\nDouble Unders\n60-40-20\nKB Swings\n30-20-10\nBurpees Over KB",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-17-wod",
+      "date": "2026-11-17",
+      "type": "WOD",
+      "title": "17-11-2026 WOD",
+      "rawText": "17-11-2026 WOD\nToes to Bar\n\nEMOM 8'\n4-8 T2B\nCROSSFIT OPEN WORKOUT 18.1\n\nAMRAP 20'\n8 T2B\n10 DB Hang Clean & Jerks @15/22,5kg\n12 Cals Erg",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "17-11-2026 WOD\nToes to Bar\n\nEMOM 8'\n4-8 T2B\nCROSSFIT OPEN WORKOUT 18.1\n\nAMRAP 20'\n8 T2B\n10 DB Hang Clean & Jerks @15/22,5kg\n12 Cals Erg",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-18-wod",
+      "date": "2026-11-18",
+      "type": "WOD",
+      "title": "18-11-2026 WOD",
+      "rawText": "18-11-2026 WOD\nEMOM 8'\n2 Hang Power Snatch\nAMRAP 12'\n5 Hang Power Snatches\n7 Pull Ups\n9 Box Jumps",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "18-11-2026 WOD\nEMOM 8'\n2 Hang Power Snatch\nAMRAP 12'\n5 Hang Power Snatches\n7 Pull Ups\n9 Box Jumps",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-19-wod",
+      "date": "2026-11-19",
+      "type": "WOD",
+      "title": "19-11-2026 WOD",
+      "rawText": "19-11-2026 WOD\nEvery 2' x 5 sets\n5 Push Press\nFor Time:\n21-15-9\nHang Cleans @50/35KG\nFront Squats @50/35KG\nPush Press @50/35KG",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "19-11-2026 WOD\nEvery 2' x 5 sets\n5 Push Press\nFor Time:\n21-15-9\nHang Cleans @50/35KG\nFront Squats @50/35KG\nPush Press @50/35KG",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-20-wod",
+      "date": "2026-11-20",
+      "type": "WOD",
+      "title": "20-11-2026 WOD",
+      "rawText": "20-11-2026 WOD\nEvery 2' x 5 Sets:\n4 Deadlifts (3'' Down)\n3 Rounds, For Time:\n400m Run\n10 Deadlifts\n10 Burpees Over Bar\nRest 1'/round",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "20-11-2026 WOD\nEvery 2' x 5 Sets:\n4 Deadlifts (3'' Down)\n3 Rounds, For Time:\n400m Run\n10 Deadlifts\n10 Burpees Over Bar\nRest 1'/round",
+          "scoreType": "time"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-21-hybrid",
+      "date": "2026-11-21",
+      "type": "HYBRID",
+      "title": "21-11-2026 HYBRID",
+      "rawText": "21-11-2026 HYBRID\n\nErg Marathon\n\n1,5 km  Row\n1,5 km  SkyErg\n5 Km bike",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "21-11-2026 HYBRID\n\nErg Marathon\n\n1,5 km  Row\n1,5 km  SkyErg\n5 Km bike",
+          "scoreType": "notes"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-23-wod",
+      "date": "2026-11-23",
+      "type": "WOD",
+      "title": "23-11-2026 WOD",
+      "rawText": "23-11-2026 WOD\nHSPU\n\nEMOM 8'\n2-4 HSPU\nAMRAP 10'\n\n2-4-6-8-10-12...\nFront Squats @60/40\n1-2-3-4-5-6...",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "23-11-2026 WOD\nHSPU\n\nEMOM 8'\n2-4 HSPU\nAMRAP 10'\n\n2-4-6-8-10-12...\nFront Squats @60/40\n1-2-3-4-5-6...",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-24-wod",
+      "date": "2026-11-24",
+      "type": "WOD",
+      "title": "24-11-2026 WOD",
+      "rawText": "24-11-2026 WOD\nEvery 2' x 5 Sets:\n1 Power Clean\n1 Hang Clean\n1 Front Squat\n1 Shoulder to Overhead\nIntervals 2-2-2-2\n\nAMRAP\n10/7 Cals Erg\n3 Wall Walks\nMax Heavy Squat Cleans in remainining time\n\nRest 1'/interval",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "24-11-2026 WOD\nEvery 2' x 5 Sets:\n1 Power Clean\n1 Hang Clean\n1 Front Squat\n1 Shoulder to Overhead\nIntervals 2-2-2-2\n\nAMRAP\n10/7 Cals Erg\n3 Wall Walks\nMax Heavy Squat Cleans in remainining time\n\nRest 1'/interval",
+          "scoreType": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-25-wod",
+      "date": "2026-11-25",
+      "type": "WOD",
+      "title": "25-11-2026 WOD",
+      "rawText": "25-11-2026 WOD\nEvery 2' x 5 Sets\n4 Back Squats (3'' down)\nEMOM To Death\nmin 1 - 1 Deadlift + 1 Burpee Over The Bar\nmin 2 - 2 Deadlift + 2 Burpee Over The Bar\nmin 3 - 3 Deadlift + 3 Burpee Over The Bar\nmin 4 - 4 Deadlift + 4 Burpee Over The Bar\nmin 5 ...\n\nDeadlift - 75%RM/RPE 7\n\nDeath Time: 15'",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "25-11-2026 WOD\nEvery 2' x 5 Sets\n4 Back Squats (3'' down)\nEMOM To Death\nmin 1 - 1 Deadlift + 1 Burpee Over The Bar\nmin 2 - 2 Deadlift + 2 Burpee Over The Bar\nmin 3 - 3 Deadlift + 3 Burpee Over The Bar\nmin 4 - 4 Deadlift + 4 Burpee Over The Bar\nmin 5 ...\n\nDeadlift - 75%RM/RPE 7\n\nDeath Time: 15'",
           "scoreType": "notes"
         }
       ]
