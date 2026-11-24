@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-09T11:10:06.634Z",
+  "exportedAt": "2026-11-24T09:36:16.244Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -162,6 +162,12 @@
       "completedAuto": true,
       "updatedAt": "2026-08-28T10:56:12.075Z"
     },
+    "2026-08-28-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-08-28T10:54:45.514Z",
+      "completedManual": true
+    },
     "2026-03-22-walk": {
       "completed": true,
       "completedAuto": true,
@@ -176,12 +182,6 @@
       "completed": true,
       "completedAuto": true,
       "updatedAt": "2026-08-28T09:39:30.254Z"
-    },
-    "2026-08-28-wod": {
-      "completed": true,
-      "completedManual": true,
-      "updatedAt": "2026-08-28T10:54:45.514Z",
-      "completedAuto": true
     },
     "2026-08-17-wod": {
       "completed": true,
@@ -548,16 +548,24 @@
       "notes": ""
     },
     "2026-11-10-wod": {
-      "updatedAt": "2026-11-09T11:05:43.568Z"
+      "updatedAt": "2026-11-09T11:05:43.568Z",
+      "completed": true,
+      "completedAuto": true
     },
     "2026-11-11-wod": {
-      "updatedAt": "2026-11-09T11:06:03.512Z"
+      "updatedAt": "2026-11-09T11:06:03.512Z",
+      "completed": true,
+      "completedAuto": true
     },
     "2026-11-12-wod": {
-      "updatedAt": "2026-11-09T11:06:25.012Z"
+      "updatedAt": "2026-11-09T11:06:25.012Z",
+      "completed": true,
+      "completedAuto": true
     },
     "2026-11-13-wod": {
-      "updatedAt": "2026-11-09T11:06:56.685Z"
+      "updatedAt": "2026-11-09T11:06:56.685Z",
+      "completed": true,
+      "completedAuto": true
     },
     "2026-10-18-run": {
       "updatedAt": "2026-11-09T11:08:14.110Z",
