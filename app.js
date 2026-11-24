@@ -3588,42 +3588,7 @@
     return null;
   }
 
-  async function fetchRemoteBackupData() {
-    const settings = loadSyncSettings();
-    const { owner, repo, branch } = syncRepoParts(settings);
-    // Keep headers CORS-simple. Custom Accept / X-GitHub-Api-Version can fail
-    // preflight in mobile browsers and silently fall back to a stale CDN copy.
-    const headers = { Accept: "application/json" };
-    if (settings.token) headers.Authorization = `Bearer ${settings.token}`;
-
-    try {
-      const apiRes = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}/contents/${SYNC_FILE_PATH}?ref=${encodeURIComponent(branch)}`,
-        { cache: "no-store", headers }
-      );
-      if (apiRes.ok) {
-        const text = await apiRes.text();
-        try {
-          const meta = JSON.parse(text);
-          const parsed = parseSyncPayload(meta);
-          if (parsed) return parsed;
-          if (meta?.download_url) {
-            const dl = await fetch(`${meta.download_url}${meta.download_url.includes("?") ? "&" : "?"}t=${Date.now()}`, {
-              cache: "no-store",
-            });
-            if (dl.ok) {
-              const fromDl = parseSyncPayload(await dl.json());
-              if (fromDl) return fromDl;
-            }
-          }
-        } catch {
-          /* fall through */
-        }
-      }
-    } catch {
-      /* fall back to raw URL */
-    }
-
+  async function fetchFromRawMirrors(owner, repo, branch) {
     const candidates = [
       `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${SYNC_FILE_PATH}?t=${Date.now()}`,
       `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${SYNC_FILE_PATH}?t=${Date.now()}`,
@@ -3641,17 +3606,69 @@
     return null;
   }
 
+  async function fetchFromGitHubApi(owner, repo, branch, headers) {
+    const apiRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/contents/${SYNC_FILE_PATH}?ref=${encodeURIComponent(branch)}`,
+      { cache: "no-store", headers }
+    );
+    if (!apiRes.ok) return null;
+    const text = await apiRes.text();
+    const meta = JSON.parse(text);
+    const parsed = parseSyncPayload(meta);
+    if (parsed) return parsed;
+    if (meta?.download_url) {
+      const dl = await fetch(
+        `${meta.download_url}${meta.download_url.includes("?") ? "&" : "?"}t=${Date.now()}`,
+        { cache: "no-store" }
+      );
+      if (dl.ok) {
+        const fromDl = parseSyncPayload(await dl.json());
+        if (fromDl) return fromDl;
+      }
+    }
+    return null;
+  }
+
+  async function fetchRemoteBackupData() {
+    const settings = loadSyncSettings();
+    const { owner, repo, branch } = syncRepoParts(settings);
+    // Keep headers CORS-simple. Custom Accept / X-GitHub-Api-Version can fail
+    // preflight in mobile browsers and silently fall back to a stale CDN copy.
+    const headers = { Accept: "application/json" };
+    if (settings.token) headers.Authorization = `Bearer ${settings.token}`;
+
+    // With a token: API first (freshest). Without: raw mirrors first so we don't
+    // burn the unauthenticated 60/hour GitHub API quota every 30s on phones.
+    if (settings.token) {
+      try {
+        const fromApi = await fetchFromGitHubApi(owner, repo, branch, headers);
+        if (fromApi) return fromApi;
+      } catch {
+        /* fall through */
+      }
+      return fetchFromRawMirrors(owner, repo, branch);
+    }
+
+    const fromRaw = await fetchFromRawMirrors(owner, repo, branch);
+    if (fromRaw) return fromRaw;
+    try {
+      return await fetchFromGitHubApi(owner, repo, branch, headers);
+    } catch {
+      return null;
+    }
+  }
+
   function renderSyncStatus() {
     if (!els.syncStatus) return;
     const settings = loadSyncSettings();
     const count = allWorkouts().length;
     const custom = localCustomCount();
     const parts = [`${count} session${count === 1 ? "" : "s"} on this device`];
-    if (custom) {
-      const cloudCustom = settings.lastRemoteCustomCount;
-      if (cloudCustom != null && custom > cloudCustom) {
+    const cloudCustom = settings.lastRemoteCustomCount;
+    if (custom || cloudCustom != null) {
+      if (cloudCustom != null && custom !== cloudCustom) {
         parts.push(`${custom} added · ${cloudCustom} in cloud`);
-      } else {
+      } else if (custom) {
         parts.push(`${custom} added by you`);
       }
     }
@@ -3853,9 +3870,12 @@
   }
 
   async function initCloudSync() {
-    await pullCloudSync({ silent: true });
+    const first = await pullCloudSync({ silent: true, force: true });
     await syncIfLocalAhead();
     renderSyncStatus();
+    if (first?.added > 0) {
+      showBanner(`Synced ${first.added} session${first.added === 1 ? "" : "s"} from cloud.`);
+    }
     const syncIfVisible = async () => {
       if (document.visibilityState !== "visible") return;
       // Avoid mid-compose races that made the add form / list look wiped.
@@ -3866,7 +3886,9 @@
     document.addEventListener("visibilitychange", syncIfVisible);
     window.addEventListener("focus", syncIfVisible);
     window.addEventListener("pageshow", syncIfVisible);
-    window.setInterval(syncIfVisible, 30 * 1000);
+    // Tokenless devices: pull less often to avoid GitHub API rate limits.
+    const intervalMs = loadSyncSettings().token ? 30 * 1000 : 60 * 1000;
+    window.setInterval(syncIfVisible, intervalMs);
   }
 
   function openSyncDevicesModal() {
@@ -3919,7 +3941,10 @@
       if (countsEl) {
         countsEl.textContent = `This device: ${allWorkouts().length} sessions (${localCustomCount()} added by you) · Cloud: ${remoteCustom} added session${remoteCustom === 1 ? "" : "s"}`;
       }
-      if (warningEl && localCustomCount() > remoteCustom) {
+      if (warningEl && localCustomCount() < remoteCustom) {
+        warningEl.hidden = false;
+        warningEl.textContent = `This device is behind the cloud (${localCustomCount()} here · ${remoteCustom} in cloud). Tap Pull now.`;
+      } else if (warningEl && localCustomCount() > remoteCustom) {
         warningEl.hidden = false;
         warningEl.textContent =
           localCustomCount() > remoteCustom && !settings.lastPushAt
