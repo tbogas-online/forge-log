@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-11-24T09:48:47.846Z",
+  "exportedAt": "2026-11-25T05:53:53.324Z",
   "logs": {
     "2026-06-22-wod": {
       "completed": true,
@@ -162,6 +162,12 @@
       "completedAuto": true,
       "updatedAt": "2026-08-28T10:56:12.075Z"
     },
+    "2026-08-28-wod": {
+      "completed": true,
+      "completedAuto": true,
+      "updatedAt": "2026-08-28T10:54:45.514Z",
+      "completedManual": true
+    },
     "2026-03-22-walk": {
       "completed": true,
       "completedAuto": true,
@@ -176,12 +182,6 @@
       "completed": true,
       "completedAuto": true,
       "updatedAt": "2026-08-28T09:39:30.254Z"
-    },
-    "2026-08-28-wod": {
-      "completed": true,
-      "completedManual": true,
-      "updatedAt": "2026-08-28T10:54:45.514Z",
-      "completedAuto": true
     },
     "2026-08-17-wod": {
       "completed": true,
@@ -565,8 +565,8 @@
     "2026-11-13-wod": {
       "updatedAt": "2026-11-09T11:06:56.685Z",
       "completed": true,
-      "completedManual": true,
-      "completedAuto": true
+      "completedAuto": true,
+      "completedManual": true
     },
     "2026-10-18-run": {
       "updatedAt": "2026-11-09T11:08:14.110Z",
@@ -629,6 +629,9 @@
     },
     "2026-11-25-wod": {
       "updatedAt": "2026-11-24T09:35:20.010Z"
+    },
+    "2026-11-26-wod": {
+      "updatedAt": "2026-11-25T05:53:51.996Z"
     }
   },
   "custom": [
@@ -1665,6 +1668,21 @@
           "name": "WORKOUT",
           "content": "25-11-2026 WOD\nEvery 2' x 5 Sets\n4 Back Squats (3'' down)\nEMOM To Death\nmin 1 - 1 Deadlift + 1 Burpee Over The Bar\nmin 2 - 2 Deadlift + 2 Burpee Over The Bar\nmin 3 - 3 Deadlift + 3 Burpee Over The Bar\nmin 4 - 4 Deadlift + 4 Burpee Over The Bar\nmin 5 ...\n\nDeadlift - 75%RM/RPE 7\n\nDeath Time: 15'",
           "scoreType": "notes"
+        }
+      ]
+    },
+    {
+      "id": "2026-11-26-wod",
+      "date": "2026-11-26",
+      "type": "WOD",
+      "title": "26-11-2026 WOD",
+      "rawText": "26-11-2026 WOD\nEvery 30'' x 16 Sets\n1 Hang Power Snatch\nFor Time:\nBuy In:\n200 Double Unders\n\nInto...\n20 Power Snatch @50/35kg\n40 T2B/Knee Raises\n60 Box Jump Overs\n40 T2B/Knee Raises\n20 Power Snatch @50/35kg\n\nBuy Out:\n200 Double Unders",
+      "custom": true,
+      "sections": [
+        {
+          "name": "WORKOUT",
+          "content": "26-11-2026 WOD\nEvery 30'' x 16 Sets\n1 Hang Power Snatch\nFor Time:\nBuy In:\n200 Double Unders\n\nInto...\n20 Power Snatch @50/35kg\n40 T2B/Knee Raises\n60 Box Jump Overs\n40 T2B/Knee Raises\n20 Power Snatch @50/35kg\n\nBuy Out:\n200 Double Unders",
+          "scoreType": "time"
         }
       ]
     }
